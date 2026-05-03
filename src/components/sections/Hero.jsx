@@ -143,7 +143,7 @@ const Hero = () => {
                   View My Work <FiArrowRight size={15} />
                 </button>
               </Link>
-              <a href="/resume.pdf" download className="btn-ghost" aria-label="Download resume PDF">
+              <a href={`${import.meta.env.BASE_URL}resume.pdf`} download className="btn-ghost" aria-label="Download resume PDF">
                 <FiDownload size={15} /> Download Resume
               </a>
             </motion.div>
@@ -199,7 +199,7 @@ const Hero = () => {
             >
               {/* Profile image — with AR initials fallback */}
               <img
-                src="/profile.jpg"
+                src={`${import.meta.env.BASE_URL}profile.jpg`}
                 alt="Aditya Roy — Full-Stack Developer and AI Builder"
                 className="w-full h-full object-cover"
                 onError={(e) => {

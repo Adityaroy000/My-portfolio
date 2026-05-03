@@ -90,7 +90,7 @@ const Navbar = () => {
           {/* Right side — Resume + mobile hamburger */}
           <div className="flex items-center gap-4">
             <a
-              href="/resume.pdf"
+              href={`${import.meta.env.BASE_URL}resume.pdf`}
               download
               aria-label="Download Aditya Roy's resume"
               className="btn-ghost hidden md:inline-flex mt-1 rounded-full"
@@ -149,7 +149,7 @@ const Navbar = () => {
                 ))}
                 <li>
                   <a
-                    href="/resume.pdf"
+                    href={`${import.meta.env.BASE_URL}resume.pdf`}
                     download
                     onClick={closeMenu}
                     aria-label="Download resume"
