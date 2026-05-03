@@ -5,7 +5,7 @@
  * Route "/projects/:slug" → ProjectDetail case study page
  */
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HashRouter, Routes, Route } from 'react-router-dom'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 import ScrollProgress from './components/ui/ScrollProgress'
@@ -14,7 +14,7 @@ import Home from './pages/Home'
 import ProjectDetail from './pages/ProjectDetail'
 
 const App = () => (
-  <BrowserRouter>
+  <HashRouter>
     <CustomCursor />
     <ScrollProgress />
     <Navbar />
@@ -23,7 +23,7 @@ const App = () => (
       <Route path="/projects/:slug" element={<ProjectDetail />} />
     </Routes>
     <Footer />
-  </BrowserRouter>
+  </HashRouter>
 )
 
 export default App
