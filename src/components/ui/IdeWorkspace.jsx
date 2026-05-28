@@ -7,9 +7,9 @@
  *  - Bottom terminal drawer with custom commands.
  */
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiChevronDown, FiFolder, FiFile, FiTerminal, FiPlay, FiCheck, FiX, FiAward, FiLayers, FiActivity, FiGitPullRequest } from 'react-icons/fi'
+import { FiChevronDown, FiChevronRight, FiFolder, FiFile, FiTerminal, FiPlay, FiCheck, FiX, FiAward, FiLayers, FiActivity, FiGitPullRequest, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi'
 import dsaStats from '../../data/dsa_stats.json'
 
 const FILES = {
@@ -138,13 +138,46 @@ const IdeWorkspace = () => {
     { type: 'output', text: 'Type "help" to see available terminal commands.' },
     { type: 'output', text: '' }
   ])
-  
+
+  // ── Sidebar collapse state ──
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+
+  // ── Terminal resize state ──
+  const [terminalHeight, setTerminalHeight] = useState(176) // px, matches h-44
+  const isResizing = useRef(false)
+  const resizeStartY = useRef(0)
+  const resizeStartH = useRef(0)
+
   const terminalEndRef = useRef(null)
   const inputRef = useRef(null)
 
   useEffect(() => {
     terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [history])
+
+  // ── Terminal drag-to-resize handlers ──
+  const onResizeMouseDown = useCallback((e) => {
+    e.preventDefault()
+    isResizing.current = true
+    resizeStartY.current = e.clientY
+    resizeStartH.current = terminalHeight
+
+    const onMouseMove = (e) => {
+      if (!isResizing.current) return
+      const delta = resizeStartY.current - e.clientY // drag up = increase height
+      const newH = Math.min(340, Math.max(80, resizeStartH.current + delta))
+      setTerminalHeight(newH)
+    }
+
+    const onMouseUp = () => {
+      isResizing.current = false
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+  }, [terminalHeight])
 
   const openFile = (fileName) => {
     if (!openTabs.includes(fileName)) {
@@ -261,41 +294,75 @@ Available commands:
 
       {/* Main Workspace split */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left File Tree Sidebar */}
-        <div
-          className="hidden sm:flex flex-col w-48 border-r bg-black/15 shrink-0 select-none"
+        {/* Left File Tree Sidebar — collapsible */}
+        <motion.div
+          animate={{ width: sidebarOpen ? 192 : 36 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+          className="hidden sm:flex flex-col border-r bg-black/15 shrink-0 select-none overflow-hidden"
           style={{ borderColor: 'var(--border)' }}
         >
-          <div className="p-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-            <span className="font-bold text-[10px]" style={{ color: 'var(--text-muted)' }}>EXPLORER</span>
-            <FiChevronDown style={{ color: 'var(--text-muted)' }} />
+          {/* Sidebar header with collapse toggle */}
+          <div className="p-3 border-b flex items-center justify-between shrink-0" style={{ borderColor: 'var(--border)' }}>
+            {sidebarOpen && (
+              <span className="font-bold text-[10px] whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>EXPLORER</span>
+            )}
+            <button
+              onClick={(e) => { e.stopPropagation(); setSidebarOpen(v => !v) }}
+              className="ml-auto p-0.5 rounded hover:bg-white/10 transition-colors cursor-pointer"
+              title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+            >
+              {sidebarOpen
+                ? <FiChevronsLeft size={12} style={{ color: 'var(--text-muted)' }} />
+                : <FiChevronsRight size={12} style={{ color: 'var(--accent)' }} />}
+            </button>
           </div>
-          <div className="p-2 space-y-2 text-left">
-            <div className="flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
-              <FiFolder size={12} style={{ color: 'var(--accent)' }} />
-              <span className="font-semibold">portfolio</span>
+
+          {/* Sidebar file list — hidden when collapsed */}
+          {sidebarOpen && (
+            <div className="p-2 space-y-2 text-left overflow-hidden">
+              <div className="flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
+                <FiFolder size={12} style={{ color: 'var(--accent)' }} />
+                <span className="font-semibold truncate">portfolio</span>
+              </div>
+              <div className="pl-4 space-y-1">
+                {Object.keys(FILES).map((fileName) => (
+                  <div
+                    key={fileName}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      openFile(fileName)
+                    }}
+                    className="flex items-center gap-2 py-1 px-2 rounded cursor-pointer transition-colors duration-150 hover:bg-white/5"
+                    style={{
+                      color: activeFile === fileName ? 'var(--accent)' : 'var(--text-secondary)',
+                      background: activeFile === fileName ? 'var(--accent-muted)' : 'transparent'
+                    }}
+                  >
+                    <FiFile size={10} />
+                    <span className="truncate">{fileName}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="pl-4 space-y-1">
+          )}
+
+          {/* Collapsed: show file icons only */}
+          {!sidebarOpen && (
+            <div className="flex flex-col items-center gap-2 py-2">
               {Object.keys(FILES).map((fileName) => (
-                <div
+                <button
                   key={fileName}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    openFile(fileName)
-                  }}
-                  className="flex items-center gap-2 py-1 px-2 rounded cursor-pointer transition-colors duration-150 hover:bg-white/5"
-                  style={{
-                    color: activeFile === fileName ? 'var(--accent)' : 'var(--text-secondary)',
-                    background: activeFile === fileName ? 'var(--accent-muted)' : 'transparent'
-                  }}
+                  onClick={(e) => { e.stopPropagation(); openFile(fileName); setSidebarOpen(true) }}
+                  title={fileName}
+                  className="p-1 rounded hover:bg-white/10 transition-colors cursor-pointer"
+                  style={{ color: activeFile === fileName ? 'var(--accent)' : 'var(--text-muted)' }}
                 >
-                  <FiFile size={10} />
-                  <span>{fileName}</span>
-                </div>
+                  <FiFile size={12} />
+                </button>
               ))}
             </div>
-          </div>
-        </div>
+          )}
+        </motion.div>
 
         {/* Center Editor + Bottom Terminal container */}
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -515,10 +582,6 @@ Available commands:
                           <FiActivity size={18} style={{ color: 'var(--accent)' }} />
                           <span>100 Days Badge</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <FiGitPullRequest size={18} style={{ color: 'var(--accent)' }} />
-                          <span>Championship Medal</span>
-                        </div>
                       </div>
                     </div>
                   )}
@@ -586,15 +649,29 @@ Available commands:
             )}
           </div>
 
-          {/* Bottom Terminal Section */}
+          {/* Bottom Terminal Section — resizable */}
           <div
-            className="h-44 border-t flex flex-col bg-black/25 overflow-hidden shrink-0"
-            style={{ borderColor: 'var(--border)' }}
+            className="border-t flex flex-col bg-black/25 overflow-hidden shrink-0"
+            style={{ borderColor: 'var(--border)', height: `${terminalHeight}px` }}
           >
+            {/* Drag-to-resize handle */}
+            <div
+              onMouseDown={onResizeMouseDown}
+              className="h-1 w-full shrink-0 cursor-row-resize group flex items-center justify-center"
+              title="Drag to resize terminal"
+              style={{ background: 'transparent' }}
+            >
+              <div className="w-10 h-0.5 rounded-full transition-colors group-hover:bg-[var(--accent)] bg-white/10" />
+            </div>
             {/* Terminal Tab header */}
-            <div className="px-4 py-1.5 bg-black/20 border-b flex items-center gap-2" style={{ borderColor: 'var(--border)' }}>
-              <FiTerminal size={11} style={{ color: 'var(--accent)' }} />
-              <span className="font-bold text-[9px]" style={{ color: 'var(--text-secondary)' }}>TERMINAL</span>
+            <div className="px-4 py-1.5 bg-black/20 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
+              <div className="flex items-center gap-2">
+                <FiTerminal size={11} style={{ color: 'var(--accent)' }} />
+                <span className="font-bold text-[9px]" style={{ color: 'var(--text-secondary)' }}>TERMINAL</span>
+              </div>
+              <span className="text-[9px] select-none" style={{ color: 'var(--text-muted)' }}>
+                {terminalHeight}px ↕ drag to resize
+              </span>
             </div>
 
             {/* Terminal logs */}
