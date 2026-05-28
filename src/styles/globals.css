@@ -19,10 +19,10 @@
   --accent-muted: rgba(230, 199, 156, 0.15);
   --accent-dim: rgba(230, 199, 156, 0.6);
 
-  /* Text */
+  /* Text - brightened for better contrast */
   --text-primary: #f0ece4;
-  --text-secondary: #9eb5b0;
-  --text-muted: #5a7a75;
+  --text-secondary: #c0d6d1;
+  --text-muted: #759993;
 
   /* Borders */
   --border: rgba(230, 199, 156, 0.12);
@@ -33,7 +33,7 @@
   --glow-strong: rgba(230, 199, 156, 0.18);
 
   /* Spacing */
-  --section-gap: 10rem;
+  --section-gap: 5.5rem;
   --container-px: clamp(1.5rem, 5vw, 5rem);
   --card-pad: 2.5rem;
   --gutter: 2rem;
@@ -42,6 +42,48 @@
   --font-display: 'Cormorant Garamond', serif;
   --font-sans: 'DM Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ── Hacker Theme (Matrix Neon Green & Black) ── */
+html.theme-hacker {
+  --bg-primary: #050505;
+  --bg-secondary: #0d0d0d;
+  --bg-tertiary: #121212;
+
+  --accent: #00ff66;
+  --accent-muted: rgba(0, 255, 102, 0.12);
+  --accent-dim: rgba(0, 255, 102, 0.6);
+
+  --text-primary: #e6ffe6;
+  --text-secondary: #a3ffa3;
+  --text-muted: #59b359;
+
+  --border: rgba(0, 255, 102, 0.12);
+  --border-hover: rgba(0, 255, 102, 0.4);
+
+  --glow: rgba(0, 255, 102, 0.08);
+  --glow-strong: rgba(0, 255, 102, 0.2);
+}
+
+/* ── VS Code Dark Theme (One Dark inspired) ── */
+html.theme-dark {
+  --bg-primary: #1e1e24;
+  --bg-secondary: #282c34;
+  --bg-tertiary: #21252b;
+
+  --accent: #61afef;
+  --accent-muted: rgba(97, 175, 239, 0.15);
+  --accent-dim: rgba(97, 175, 239, 0.6);
+
+  --text-primary: #abb2bf;
+  --text-secondary: #dcdfe4;
+  --text-muted: #5c6370;
+
+  --border: rgba(97, 175, 239, 0.12);
+  --border-hover: rgba(97, 175, 239, 0.4);
+
+  --glow: rgba(97, 175, 239, 0.08);
+  --glow-strong: rgba(97, 175, 239, 0.2);
 }
 
 /* ── Reset & Base ── */
@@ -279,7 +321,7 @@ img {
 /* ── Responsive Helpers ── */
 @media (max-width: 768px) {
   :root {
-    --section-gap: 6rem;
+    --section-gap: 3.5rem;
     --container-px: 1.25rem;
     --card-pad: 1.5rem;
   }
@@ -287,6 +329,27 @@ img {
 
 @media (max-width: 480px) {
   :root {
-    --section-gap: 4rem;
+    --section-gap: 2.5rem;
   }
 }
+
+/* ── IDE Syntax Highlighting Classes ── */
+.ide-key { color: #61afef; font-weight: 500; }
+.ide-string { color: #98c379; }
+.ide-number { color: #d19a66; }
+.ide-boolean { color: #c678dd; }
+.ide-comment { color: #5c6370; font-style: italic; }
+.ide-keyword { color: #c678dd; font-weight: bold; }
+.ide-hash { color: #e5c07b; }
+.ide-header { color: var(--accent); font-weight: bold; }
+.ide-bullet { color: var(--accent); }
+
+/* Theme hacker overrides */
+html.theme-hacker .ide-key { color: #00ff66; font-weight: bold; }
+html.theme-hacker .ide-string { color: #a3ffa3; }
+html.theme-hacker .ide-number { color: #00ff66; }
+html.theme-hacker .ide-boolean { color: #e6ffe6; }
+html.theme-hacker .ide-comment { color: #59b359; }
+html.theme-hacker .ide-keyword { color: #00ff66; }
+html.theme-hacker .ide-hash { color: #a3ffa3; }
+html.theme-hacker .ide-header { color: #00ff66; }

@@ -1,153 +1,197 @@
 /**
- * Education.jsx — Two-column layout.
- * Left (60%): Gold timeline with hoverable cards.
- * Right (40%): EducationHoverPanel slides in on card hover.
+ * Education.jsx — CS Odyssey & Education
+ * Upgraded from a generic vertical timeline to an interactive, horizontal
+ * roadmap showing academic growth side-by-side with self-driven CS milestones.
  */
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import SectionTitle from '../ui/SectionTitle'
-import EducationHoverPanel from '../ui/EducationHoverPanel'
 import { education, educationStories } from '../../data/education'
+import { FiBookOpen, FiAward, FiLayers, FiCode } from 'react-icons/fi'
+
+const YEAR_UNLOCKS = {
+  year4: ['React/Vite', 'Daily DSA', 'System Specs optimization', 'System Engineer L1 Interviews'],
+  year3: ['Express.js Backend', 'Figma Design', 'Dynamic RBAC Guard', 'Server-Sent Events (SSE)'],
+  year2: ['C++ STL', 'Data Structures & Algorithms', 'Machine Learning Theory', 'OOP & DBMS Concepts'],
+  year1: ['C Language Syntax', 'Basic Algorithm logic', 'Pointer operations', 'Competitive Programming basics'],
+  schooling: ['Secondary Education', 'Higher Secondary physics/math', 'JEE resilience', 'Calculus foundations']
+}
+
+const YEAR_ICONS = {
+  year4: FiLayers,
+  year3: FiCode,
+  year2: FiAward,
+  year1: FiBookOpen,
+  schooling: FiBookOpen
+}
 
 const Education = () => {
-  const [activeId, setActiveId] = useState(null)
+  const [activeId, setActiveId] = useState('year4')
 
-  const activeStory = educationStories.find((s) => s.id === activeId) || null
+  const activeItem = education.find((e) => e.id === activeId)
+  const activeStory = educationStories.find((s) => s.id === activeId)
+  const Unlocks = YEAR_UNLOCKS[activeId] || []
+  const Icon = YEAR_ICONS[activeId] || FiBookOpen
 
   return (
     <section
       id="education"
       className="section-padding"
       style={{ background: 'var(--bg-primary)' }}
-      aria-label="Education history"
+      aria-label="CS Odyssey and Education history"
     >
       <div className="container-main">
-        <SectionTitle number="07" title="Education" />
+        <SectionTitle number="07" title="CS Odyssey & Education" />
 
-        <div className="grid md:grid-cols-5 gap-10 lg:gap-16 items-start">
-          {/* LEFT — Timeline (60%) */}
-          <div className="md:col-span-3 relative">
-            {/* Vertical gold line */}
-            <div
-              aria-hidden="true"
-              className="absolute left-3 top-2 bottom-2"
-              style={{
-                width: 1,
-                background: 'linear-gradient(to bottom, var(--accent), rgba(230,199,156,0.1))',
-              }}
-            />
+        {/* Horizontal Navigation Stepper */}
+        <div className="relative mb-12 py-4 overflow-x-auto scrollbar-none">
+          {/* Connecting line */}
+          <div
+            aria-hidden="true"
+            className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] hidden md:block"
+            style={{
+              background: 'linear-gradient(to right, var(--border), var(--accent), var(--border))',
+              zIndex: 0
+            }}
+          />
 
-            <div className="flex flex-col gap-8">
-              {education.map((item, index) => (
-                <motion.div
+          <div className="flex md:justify-between items-center gap-6 md:gap-4 relative z-10 px-4 min-w-[640px]">
+            {education.map((item) => {
+              const isSelected = item.id === activeId
+              return (
+                <button
                   key={item.id}
-                  className="relative pl-12 cursor-pointer"
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: '-60px' }}
-                  transition={{ duration: 0.55, delay: index * 0.15, ease: [0.22, 1, 0.36, 1] }}
-                  onMouseEnter={() => setActiveId(item.id)}
-                  onMouseLeave={() => setActiveId(null)}
-                  onFocus={() => setActiveId(item.id)}
-                  onBlur={() => setActiveId(null)}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`${item.institution} — hover to read the story`}
+                  onClick={() => setActiveId(item.id)}
+                  className="flex flex-col items-center gap-2 group cursor-pointer focus:outline-none shrink-0"
+                  aria-label={`View roadmap for ${item.degree}`}
                 >
-                  {/* Diamond node */}
+                  {/* Node dot */}
                   <motion.div
-                    aria-hidden="true"
-                    className="absolute"
+                    className="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300"
                     style={{
-                      left: -2,
-                      top: 14,
-                      width: 12,
-                      height: 12,
-                      background:
-                        activeId === item.id ? 'var(--accent)' : item.current ? 'var(--accent)' : 'var(--bg-secondary)',
-                      border: '1.5px solid var(--accent)',
-                      transform: 'rotate(45deg)',
-                      transition: 'background 0.25s',
+                      background: isSelected ? 'var(--accent)' : 'var(--bg-secondary)',
+                      borderColor: isSelected ? 'var(--accent)' : 'var(--border)',
+                      boxShadow: isSelected ? '0 0 15px var(--glow-strong)' : 'none'
                     }}
-                    animate={
-                      item.current
-                        ? {
-                            boxShadow: [
-                              '0 0 8px rgba(230,199,156,0.3)',
-                              '0 0 20px rgba(230,199,156,0.6)',
-                              '0 0 8px rgba(230,199,156,0.3)',
-                            ],
-                          }
-                        : {}
-                    }
-                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                  />
-
-                  {/* Card */}
-                  <motion.div
-                    className="p-6 rounded-lg"
-                    style={{
-                      background: 'var(--bg-secondary)',
-                      border: '1px solid',
-                      borderColor: activeId === item.id ? 'var(--border-hover)' : 'var(--border)',
-                      boxShadow: activeId === item.id ? '0 4px 24px var(--glow)' : 'none',
-                      transition: 'border-color 0.25s, box-shadow 0.25s',
-                    }}
+                    whileHover={{ scale: 1.1 }}
                   >
-                    <p className="font-mono text-xs tracking-widest mb-2" style={{ color: 'var(--accent-dim)' }}>
-                      {item.period}
-                      {item.current && (
-                        <span
-                          className="ml-2 px-2 py-0.5 rounded-full text-xs"
-                          style={{
-                            background: 'rgba(74,222,128,0.1)',
-                            color: '#4ade80',
-                            border: '1px solid rgba(74,222,128,0.3)',
-                          }}
-                        >
-                          Current
-                        </span>
-                      )}
-                    </p>
-
-                    <h3
-                      className="font-display font-semibold mb-1 leading-tight"
-                      style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)', color: 'var(--text-primary)' }}
+                    <span
+                      style={{
+                        color: isSelected ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                        fontSize: '11px',
+                        fontWeight: '600'
+                      }}
                     >
-                      {item.institution}
-                    </h3>
-
-                    <p className="font-sans text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
-                      {item.degree}
-                    </p>
-
-                    <div className="flex items-center gap-4 flex-wrap">
-                      <span
-                        className="font-mono text-xs px-3 py-1 rounded"
-                        style={{
-                          background: 'var(--accent-muted)',
-                          color: 'var(--accent)',
-                          border: '1px solid var(--border)',
-                        }}
-                      >
-                        {item.scoreLabel}: {item.score}
-                      </span>
-                      <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
-                        {item.location}
-                      </span>
-                    </div>
+                      {item.id === 'schooling' ? 'Sch' : `Yr ${item.id.replace('year', '')}`}
+                    </span>
                   </motion.div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
 
-          {/* RIGHT — Hover panel (40%) */}
-          <div className="md:col-span-2 md:sticky md:top-32">
-            <EducationHoverPanel story={activeStory} isVisible={!!activeId} />
+                  {/* Period label */}
+                  <span
+                    className="font-mono text-[10px] tracking-wider transition-colors duration-200"
+                    style={{ color: isSelected ? 'var(--accent)' : 'var(--text-muted)' }}
+                  >
+                    {item.period}
+                  </span>
+                </button>
+              )
+            })}
           </div>
         </div>
+
+        {/* Selected Roadmap Card Detail with Framer Motion slide transition */}
+        <AnimatePresence mode="wait">
+          {activeItem && activeStory && (
+            <motion.div
+              key={activeId}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.4, ease: 'easeInOut' }}
+              className="p-8 rounded-lg grid md:grid-cols-5 gap-8 text-left relative overflow-hidden"
+              style={{
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border)'
+              }}
+            >
+              {/* Outer ambient glow */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(ellipse 50% 50% at 5% 5%, rgba(230,199,156,0.04) 0%, transparent 80%)'
+                }}
+              />
+
+              {/* Story Details (60% width equivalent) */}
+              <div className="md:col-span-3 space-y-4 relative z-10">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded flex items-center justify-center"
+                    style={{ background: 'var(--accent-muted)', border: '1px solid var(--border)' }}
+                  >
+                    <Icon size={18} style={{ color: 'var(--accent)' }} />
+                  </div>
+                  <div>
+                    <h3 className="font-display font-semibold text-lg" style={{ color: 'var(--text-primary)' }}>
+                      {activeItem.institution}
+                    </h3>
+                    <p className="font-mono text-xs" style={{ color: 'var(--accent-dim)' }}>
+                      {activeItem.degree}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="font-mono text-[11px]" style={{ color: 'var(--accent)' }}>
+                  {'// REFLECTION STORY'}
+                </p>
+
+                <p className="font-sans text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                  {activeStory.story}
+                </p>
+              </div>
+
+              {/* Stats & Unlocks (40% width equivalent) */}
+              <div className="md:col-span-2 space-y-6 relative z-10 border-t md:border-t-0 md:border-l pt-6 md:pt-0 md:pl-8" style={{ borderColor: 'var(--border)' }}>
+                {/* Score panel */}
+                <div className="p-4 rounded" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)' }}>
+                  <p className="font-mono text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
+                    {activeItem.scoreLabel}
+                  </p>
+                  <p className="font-display font-bold text-xl" style={{ color: 'var(--accent)' }}>
+                    {activeItem.score}
+                  </p>
+                  <p className="font-sans text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                    Location: {activeItem.location}
+                  </p>
+                </div>
+
+                {/* Tech Unlocks */}
+                <div className="space-y-3">
+                  <p className="font-mono text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                    {'// Skills & Milestones Unlocked'}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {Unlocks.map((unlock) => (
+                      <span
+                        key={unlock}
+                        className="font-mono text-[10px] px-2.5 py-1 rounded-full"
+                        style={{
+                          background: 'rgba(230,199,156,0.06)',
+                          color: 'var(--accent)',
+                          border: '1px solid var(--border)'
+                        }}
+                      >
+                        {unlock}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   )

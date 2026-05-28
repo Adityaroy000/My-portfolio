@@ -138,13 +138,13 @@ const Hero = () => {
 
             {/* CTA buttons */}
             <motion.div variants={itemVariants} className="flex flex-wrap gap-4 mb-10">
-              <Link to="projects" smooth duration={700} offset={-80}>
+              <Link to="projects" smooth duration={700} offset={-90}>
                 <button className="btn-primary" aria-label="View my work">
                   View My Work <FiArrowRight size={15} />
                 </button>
               </Link>
-              <a href={`${import.meta.env.BASE_URL}resume.pdf`} download className="btn-ghost" aria-label="Download resume PDF">
-                <FiDownload size={15} /> Download Resume
+              <a href="https://drive.google.com/file/d/1UFxwzOoNIdG2dFcES7AW_zCWAjXxaa9F/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="btn-ghost" aria-label="View resume PDF">
+                <FiDownload size={15} /> View Resume
               </a>
             </motion.div>
 

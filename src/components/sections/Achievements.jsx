@@ -10,7 +10,8 @@ import { HiOutlineAcademicCap } from 'react-icons/hi'
 import SectionTitle from '../ui/SectionTitle'
 import AnimatedCounter from '../ui/AnimatedCounter'
 import ScrollReveal from '../ui/ScrollReveal'
-import { achievements, codingStats } from '../../data/achievements'
+import { achievements } from '../../data/achievements'
+import dsaStats from '../../data/dsa_stats.json'
 
 const iconMap = {
   graduation: HiOutlineAcademicCap,
@@ -18,7 +19,14 @@ const iconMap = {
   book: FiBookOpen,
 }
 
-const Achievements = () => (
+const Achievements = () => {
+  const dynamicCodingStats = [
+    { label: 'Problems Solved', value: dsaStats.leetcode.solved + dsaStats.gfg.solved, suffix: '+' },
+    { label: 'LeetCode', value: dsaStats.leetcode.solved, suffix: '' },
+    { label: 'GeeksForGeeks', value: dsaStats.gfg.solved, suffix: '' },
+  ]
+
+  return (
   <section
     id="achievements"
     className="section-padding"
@@ -120,7 +128,7 @@ const Achievements = () => (
             border: '1px solid var(--border)',
           }}
         >
-          {codingStats.map(({ label, value, suffix }, i) => (
+          {dynamicCodingStats.map(({ label, value, suffix }, i) => (
             <div key={label} className="flex flex-col items-center text-center">
               <span
                 className="font-display font-bold"
@@ -132,7 +140,7 @@ const Achievements = () => (
                 {label}
               </span>
               {/* Vertical divider between stats */}
-              {i < codingStats.length - 1 && (
+              {i < dynamicCodingStats.length - 1 && (
                 <div
                   aria-hidden="true"
                   className="hidden sm:block absolute"
@@ -145,6 +153,7 @@ const Achievements = () => (
       </ScrollReveal>
     </div>
   </section>
-)
+  )
+}
 
 export default Achievements

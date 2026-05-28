@@ -6,9 +6,12 @@ import { motion } from 'framer-motion'
 import AnimatedCounter from '../ui/AnimatedCounter'
 import ScrollReveal from '../ui/ScrollReveal'
 import { aboutData } from '../../data/about'
+import dsaStats from '../../data/dsa_stats.json'
+
+const totalSolved = dsaStats.leetcode.solved + dsaStats.gfg.solved
 
 const STATS = [
-  { target: 700, suffix: '+', label: 'Problems Solved' },
+  { target: totalSolved, suffix: '+', label: 'Problems Solved' },
   { target: 233, suffix: '', label: 'API Endpoints Built' },
   { target: 30, suffix: '+', label: 'MongoDB Collections' },
   { target: 5, suffix: '', label: 'Developers Led' },
