@@ -22,6 +22,10 @@ const ScreenshotGallery = ({ screenshots, captions }) => {
   const realImages = screenshots.filter(Boolean)
   const realCaptions = captions.filter((_, i) => screenshots[i])
 
+  // Resolve paths against the Vite base URL so they work on GitHub Pages
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '') // strip trailing slash
+  const resolve = (src) => (src ? `${base}${src}` : src)
+
   const openLightbox = (src) => {
     if (!src) return
     const realIdx = realImages.indexOf(src)
@@ -43,7 +47,7 @@ const ScreenshotGallery = ({ screenshots, captions }) => {
               aria-label={`Open screenshot: ${captions[i] || `Screenshot ${i + 1}`}`}
             >
               <img
-                src={src}
+                src={resolve(src)}
                 alt={captions[i] || `Project screenshot ${i + 1}`}
                 className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
                 loading="lazy"
@@ -80,7 +84,7 @@ const ScreenshotGallery = ({ screenshots, captions }) => {
       <AnimatePresence>
         {lightboxIndex !== null && realImages.length > 0 && (
           <Lightbox
-            images={realImages}
+            images={realImages.map(resolve)}
             captions={realCaptions}
             initialIndex={lightboxIndex}
             onClose={() => setLightboxIndex(null)}

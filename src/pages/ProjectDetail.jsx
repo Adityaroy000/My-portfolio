@@ -264,11 +264,12 @@ const ProjectDetail = () => {
               >
                 <div>
                   <p className="font-mono text-xs tracking-wider uppercase text-[var(--accent)] mb-4">{'// Interactive RAG Sandbox or Screenshots'}</p>
-                  {project.slug === 'transformer-intelligence-desk' ? (
-                    <AgentSimulator />
-                  ) : (
-                    <ScreenshotGallery screenshots={project.screenshots} captions={project.screenshotCaptions} />
+                  {project.screenshots?.length > 0 && (
+                    <div className="mb-8">
+                      <ScreenshotGallery screenshots={project.screenshots} captions={project.screenshotCaptions} />
+                    </div>
                   )}
+                  {project.slug === 'transformer-intelligence-desk' && <AgentSimulator />}
                 </div>
 
                 <div className="border-t pt-6" style={{ borderColor: 'var(--border)' }}>
