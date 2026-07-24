@@ -15,7 +15,7 @@ const YEAR_UNLOCKS = {
   year3: ['Express.js Backend', 'Figma Design', 'Dynamic RBAC Guard', 'Server-Sent Events (SSE)'],
   year2: ['C++ STL', 'Data Structures & Algorithms', 'Machine Learning Theory', 'OOP & DBMS Concepts'],
   year1: ['C Language Syntax', 'Basic Algorithm logic', 'Pointer operations', 'Competitive Programming basics'],
-  schooling: ['Secondary Education', 'Higher Secondary physics/math', 'JEE resilience', 'Calculus foundations']
+  schooling: ['Secondary Education', 'Higher Secondary physics/math', 'JEE resilience', 'Calculus foundations'],
 }
 
 const YEAR_ICONS = {
@@ -23,7 +23,7 @@ const YEAR_ICONS = {
   year3: FiCode,
   year2: FiAward,
   year1: FiBookOpen,
-  schooling: FiBookOpen
+  schooling: FiBookOpen,
 }
 
 const Education = () => {
@@ -52,7 +52,7 @@ const Education = () => {
             className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] hidden md:block"
             style={{
               background: 'linear-gradient(to right, var(--border), var(--accent), var(--border))',
-              zIndex: 0
+              zIndex: 0,
             }}
           />
 
@@ -72,7 +72,7 @@ const Education = () => {
                     style={{
                       background: isSelected ? 'var(--accent)' : 'var(--bg-secondary)',
                       borderColor: isSelected ? 'var(--accent)' : 'var(--border)',
-                      boxShadow: isSelected ? '0 0 15px var(--glow-strong)' : 'none'
+                      boxShadow: isSelected ? '0 0 15px var(--glow-strong)' : 'none',
                     }}
                     whileHover={{ scale: 1.1 }}
                   >
@@ -80,7 +80,7 @@ const Education = () => {
                       style={{
                         color: isSelected ? 'var(--bg-primary)' : 'var(--text-secondary)',
                         fontSize: '11px',
-                        fontWeight: '600'
+                        fontWeight: '600',
                       }}
                     >
                       {item.id === 'schooling' ? 'Sch' : `Yr ${item.id.replace('year', '')}`}
@@ -112,7 +112,7 @@ const Education = () => {
               className="p-8 rounded-lg grid md:grid-cols-5 gap-8 text-left relative overflow-hidden"
               style={{
                 background: 'var(--bg-secondary)',
-                border: '1px solid var(--border)'
+                border: '1px solid var(--border)',
               }}
             >
               {/* Outer ambient glow */}
@@ -120,7 +120,7 @@ const Education = () => {
                 aria-hidden="true"
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                  background: 'radial-gradient(ellipse 50% 50% at 5% 5%, rgba(230,199,156,0.04) 0%, transparent 80%)'
+                  background: 'radial-gradient(ellipse 50% 50% at 5% 5%, rgba(230,199,156,0.04) 0%, transparent 80%)',
                 }}
               />
 
@@ -153,10 +153,19 @@ const Education = () => {
               </div>
 
               {/* Stats & Unlocks (40% width equivalent) */}
-              <div className="md:col-span-2 space-y-6 relative z-10 border-t md:border-t-0 md:border-l pt-6 md:pt-0 md:pl-8" style={{ borderColor: 'var(--border)' }}>
+              <div
+                className="md:col-span-2 space-y-6 relative z-10 border-t md:border-t-0 md:border-l pt-6 md:pt-0 md:pl-8"
+                style={{ borderColor: 'var(--border)' }}
+              >
                 {/* Score panel */}
-                <div className="p-4 rounded" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)' }}>
-                  <p className="font-mono text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
+                <div
+                  className="p-4 rounded"
+                  style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)' }}
+                >
+                  <p
+                    className="font-mono text-[10px] uppercase tracking-wider mb-1"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
                     {activeItem.scoreLabel}
                   </p>
                   <p className="font-display font-bold text-xl" style={{ color: 'var(--accent)' }}>
@@ -180,7 +189,7 @@ const Education = () => {
                         style={{
                           background: 'rgba(230,199,156,0.06)',
                           color: 'var(--accent)',
-                          border: '1px solid var(--border)'
+                          border: '1px solid var(--border)',
                         }}
                       >
                         {unlock}

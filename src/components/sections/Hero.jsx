@@ -143,7 +143,13 @@ const Hero = () => {
                   View My Work <FiArrowRight size={15} />
                 </button>
               </Link>
-              <a href="https://drive.google.com/file/d/1UFxwzOoNIdG2dFcES7AW_zCWAjXxaa9F/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="btn-ghost" aria-label="View resume PDF">
+              <a
+                href="https://drive.google.com/file/d/1UFxwzOoNIdG2dFcES7AW_zCWAjXxaa9F/view?usp=sharing"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost"
+                aria-label="View resume PDF"
+              >
                 <FiDownload size={15} /> View Resume
               </a>
             </motion.div>

@@ -12,8 +12,8 @@ const totalSolved = dsaStats.leetcode.solved + dsaStats.gfg.solved
 
 const STATS = [
   { target: totalSolved, suffix: '+', label: 'Problems Solved' },
-  { target: 233, suffix: '', label: 'API Endpoints Built' },
-  { target: 30, suffix: '+', label: 'MongoDB Collections' },
+  { target: 2, suffix: '', label: 'Federation Platforms' },
+  { target: 233, suffix: '+', label: 'API Endpoints' },
   { target: 5, suffix: '', label: 'Developers Led' },
 ]
 

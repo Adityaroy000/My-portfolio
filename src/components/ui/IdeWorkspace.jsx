@@ -8,8 +8,10 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { FiChevronDown, FiChevronRight, FiFolder, FiFile, FiTerminal, FiPlay, FiCheck, FiX, FiAward, FiLayers, FiActivity, FiGitPullRequest, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi'
+import { motion } from 'framer-motion'
+import { FiFolder, FiFile, FiTerminal, FiAward, FiChevronsLeft, FiChevronsRight, FiTrendingUp } from 'react-icons/fi'
+import { SiLeetcode, SiGeeksforgeeks } from 'react-icons/si'
+import TiltCard from './TiltCard'
 import dsaStats from '../../data/dsa_stats.json'
 
 const FILES = {
@@ -50,6 +52,7 @@ const FILES = {
 # Milestone commits
 git log --oneline
 
+* a52f89c [2026] Deployed WAP Live (docx XML regex parser, footprint lock, NTP sync)
 * fa7e2c3 [2026] HackwithInfy physically cleared (Round 2, L1 interview completed)
 * e89d0b4 [2026] Shortlisted for Capgemini Agent Challenge & Cognizant Technoverse
 * d43f11a [2025] Launched Wushu-MIS Live SaaS (233 endpoints, dynamic RBAC, SSE)
@@ -58,7 +61,7 @@ git log --oneline
 * a09b87c [2023] Secured Grade O in C Programming Lab (First spark)
 * 0000000 [2023] Initial commit: 'Hello World' in C`,
 
-  'profile.jpg': `[Binary Image File] Select tab to render profile octagon preview.`
+  'profile.jpg': `[Binary Image File] Select tab to render profile octagon preview.`,
 }
 
 // ── Lightweight Regex Highlighting parsers ──
@@ -67,21 +70,24 @@ const highlightJson = (code) => {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, (match) => {
-      let cls = 'ide-number'
-      if (/^"/.test(match)) {
-        if (/:$/.test(match)) {
-          cls = 'ide-key'
-        } else {
-          cls = 'ide-string'
+    .replace(
+      /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
+      (match) => {
+        let cls = 'ide-number'
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+            cls = 'ide-key'
+          } else {
+            cls = 'ide-string'
+          }
+        } else if (/true|false/.test(match)) {
+          cls = 'ide-boolean'
+        } else if (/null/.test(match)) {
+          cls = 'ide-number'
         }
-      } else if (/true|false/.test(match)) {
-        cls = 'ide-boolean'
-      } else if (/null/.test(match)) {
-        cls = 'ide-number'
-      }
-      return `<span class="${cls}">${match}</span>`
-    })
+        return `<span class="${cls}">${match}</span>`
+      },
+    )
 }
 
 const highlightMarkdown = (code) => {
@@ -105,18 +111,6 @@ const highlightBash = (code) => {
     .replace(/(\*\s+)([a-f0-9]{7})/g, '$1<span class="ide-hash">$2</span>')
 }
 
-const highlightConfig = (code) => {
-  return code
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/^(\[.*\])$/gm, '<span class="ide-header">$1</span>')
-    .replace(/^([\w_]+)\s*(=)/gm, '<span class="ide-key">$1</span> $2')
-    .replace(/(".*?")/g, '<span class="ide-string">$1</span>')
-    .replace(/\b(true|false)\b/g, '<span class="ide-boolean">$1</span>')
-    .replace(/\b(\d+)\b/g, '<span class="ide-number">$1</span>')
-}
-
 const getHighlightedHTML = (fileName, code) => {
   if (fileName === 'dsa_stats.json') return highlightJson(code)
   if (fileName === 'about.md') return highlightMarkdown(code)
@@ -130,13 +124,13 @@ const IdeWorkspace = () => {
   const [viewModes, setViewModes] = useState({
     'about.md': 'preview',
     'dsa_stats.json': 'preview',
-    'git_log.sh': 'preview'
+    'git_log.sh': 'preview',
   })
   const [inputVal, setInputVal] = useState('')
   const [history, setHistory] = useState([
     { type: 'output', text: 'Aditya Roy Dev OS [Version 1.0.4]' },
     { type: 'output', text: 'Type "help" to see available terminal commands.' },
-    { type: 'output', text: '' }
+    { type: 'output', text: '' },
   ])
 
   // ── Sidebar collapse state ──
@@ -156,28 +150,31 @@ const IdeWorkspace = () => {
   }, [history])
 
   // ── Terminal drag-to-resize handlers ──
-  const onResizeMouseDown = useCallback((e) => {
-    e.preventDefault()
-    isResizing.current = true
-    resizeStartY.current = e.clientY
-    resizeStartH.current = terminalHeight
+  const onResizeMouseDown = useCallback(
+    (e) => {
+      e.preventDefault()
+      isResizing.current = true
+      resizeStartY.current = e.clientY
+      resizeStartH.current = terminalHeight
 
-    const onMouseMove = (e) => {
-      if (!isResizing.current) return
-      const delta = resizeStartY.current - e.clientY // drag up = increase height
-      const newH = Math.min(340, Math.max(80, resizeStartH.current + delta))
-      setTerminalHeight(newH)
-    }
+      const onMouseMove = (e) => {
+        if (!isResizing.current) return
+        const delta = resizeStartY.current - e.clientY // drag up = increase height
+        const newH = Math.min(340, Math.max(80, resizeStartH.current + delta))
+        setTerminalHeight(newH)
+      }
 
-    const onMouseUp = () => {
-      isResizing.current = false
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
-    }
+      const onMouseUp = () => {
+        isResizing.current = false
+        window.removeEventListener('mousemove', onMouseMove)
+        window.removeEventListener('mouseup', onMouseUp)
+      }
 
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
-  }, [terminalHeight])
+      window.addEventListener('mousemove', onMouseMove)
+      window.addEventListener('mouseup', onMouseUp)
+    },
+    [terminalHeight],
+  )
 
   const openFile = (fileName) => {
     if (!openTabs.includes(fileName)) {
@@ -220,7 +217,7 @@ Available commands:
   cat [file]         - View file in editor (e.g. cat dsa_stats.json)
   theme [name]       - Change theme (emerald, hacker, dark)
   clear              - Clear terminal
-`
+`,
         })
         break
 
@@ -267,13 +264,13 @@ Available commands:
   const activeViewMode = viewModes[activeFile] || 'code'
 
   return (
-    <div
+    <TiltCard
       onClick={() => inputRef.current?.focus()}
       className="w-full rounded-lg overflow-hidden border font-mono text-xs flex flex-col shadow-2xl transition-all duration-300"
       style={{
         background: 'var(--bg-tertiary)',
         borderColor: 'var(--border)',
-        height: '520px'
+        height: '520px',
       }}
     >
       {/* Visual Window Header */}
@@ -302,18 +299,28 @@ Available commands:
           style={{ borderColor: 'var(--border)' }}
         >
           {/* Sidebar header with collapse toggle */}
-          <div className="p-3 border-b flex items-center justify-between shrink-0" style={{ borderColor: 'var(--border)' }}>
+          <div
+            className="p-3 border-b flex items-center justify-between shrink-0"
+            style={{ borderColor: 'var(--border)' }}
+          >
             {sidebarOpen && (
-              <span className="font-bold text-[10px] whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>EXPLORER</span>
+              <span className="font-bold text-[10px] whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+                EXPLORER
+              </span>
             )}
             <button
-              onClick={(e) => { e.stopPropagation(); setSidebarOpen(v => !v) }}
+              onClick={(e) => {
+                e.stopPropagation()
+                setSidebarOpen((v) => !v)
+              }}
               className="ml-auto p-0.5 rounded hover:bg-white/10 transition-colors cursor-pointer"
               title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
             >
-              {sidebarOpen
-                ? <FiChevronsLeft size={12} style={{ color: 'var(--text-muted)' }} />
-                : <FiChevronsRight size={12} style={{ color: 'var(--accent)' }} />}
+              {sidebarOpen ? (
+                <FiChevronsLeft size={12} style={{ color: 'var(--text-muted)' }} />
+              ) : (
+                <FiChevronsRight size={12} style={{ color: 'var(--accent)' }} />
+              )}
             </button>
           </div>
 
@@ -335,7 +342,7 @@ Available commands:
                     className="flex items-center gap-2 py-1 px-2 rounded cursor-pointer transition-colors duration-150 hover:bg-white/5"
                     style={{
                       color: activeFile === fileName ? 'var(--accent)' : 'var(--text-secondary)',
-                      background: activeFile === fileName ? 'var(--accent-muted)' : 'transparent'
+                      background: activeFile === fileName ? 'var(--accent-muted)' : 'transparent',
                     }}
                   >
                     <FiFile size={10} />
@@ -352,7 +359,11 @@ Available commands:
               {Object.keys(FILES).map((fileName) => (
                 <button
                   key={fileName}
-                  onClick={(e) => { e.stopPropagation(); openFile(fileName); setSidebarOpen(true) }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    openFile(fileName)
+                    setSidebarOpen(true)
+                  }}
                   title={fileName}
                   className="p-1 rounded hover:bg-white/10 transition-colors cursor-pointer"
                   style={{ color: activeFile === fileName ? 'var(--accent)' : 'var(--text-muted)' }}
@@ -384,7 +395,7 @@ Available commands:
                   style={{
                     background: activeFile === fileName ? 'var(--bg-secondary)' : 'transparent',
                     borderColor: 'var(--border)',
-                    color: activeFile === fileName ? 'var(--accent)' : 'var(--text-muted)'
+                    color: activeFile === fileName ? 'var(--accent)' : 'var(--text-muted)',
                   }}
                 >
                   <FiFile size={10} />
@@ -411,7 +422,7 @@ Available commands:
                   style={{
                     borderColor: activeViewMode === 'code' ? 'var(--accent)' : 'transparent',
                     color: activeViewMode === 'code' ? 'var(--accent)' : 'var(--text-muted)',
-                    background: activeViewMode === 'code' ? 'var(--accent-muted)' : 'transparent'
+                    background: activeViewMode === 'code' ? 'var(--accent-muted)' : 'transparent',
                   }}
                 >
                   {'{ } Code'}
@@ -425,7 +436,7 @@ Available commands:
                   style={{
                     borderColor: activeViewMode === 'preview' ? 'var(--accent)' : 'transparent',
                     color: activeViewMode === 'preview' ? 'var(--accent)' : 'var(--text-muted)',
-                    background: activeViewMode === 'preview' ? 'var(--accent-muted)' : 'transparent'
+                    background: activeViewMode === 'preview' ? 'var(--accent-muted)' : 'transparent',
                   }}
                 >
                   👁️ Preview
@@ -460,7 +471,10 @@ Available commands:
               ) : activeViewMode === 'code' ? (
                 /* CODE MODE - with syntax highlighting */
                 <div className="flex w-full font-mono text-[11px] leading-relaxed">
-                  <div className="pr-4 border-r select-none text-right font-mono" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)', minWidth: '24px' }}>
+                  <div
+                    className="pr-4 border-r select-none text-right font-mono"
+                    style={{ borderColor: 'var(--border)', color: 'var(--text-muted)', minWidth: '24px' }}
+                  >
                     {FILES[activeFile].split('\n').map((_, index) => (
                       <div key={index}>{index + 1}</div>
                     ))}
@@ -477,15 +491,27 @@ Available commands:
                   {/* about.md Render */}
                   {activeFile === 'about.md' && (
                     <div className="space-y-4 max-w-2xl text-[var(--text-secondary)] leading-relaxed">
-                      <h3 className="font-display text-lg font-bold text-white border-b pb-2" style={{ borderColor: 'var(--border)' }}>
+                      <h3
+                        className="font-display text-lg font-bold text-white border-b pb-2"
+                        style={{ borderColor: 'var(--border)' }}
+                      >
                         Aditya Roy
                       </h3>
-                      <p className="font-mono text-[10px]" style={{ color: 'var(--accent)' }}>{'// Final-year Computer Science Engineering student @ KIIT'}</p>
-                      <p>
-                        I build real systems that solve real problems. My focus is on robust Express backend microservices, NoSQL aggregation structures, and designing self-improving RAG loops using LangGraph pipelines.
+                      <p className="font-mono text-[10px]" style={{ color: 'var(--accent)' }}>
+                        {'// Final-year Computer Science Engineering student @ KIIT'}
                       </p>
-                      <blockquote className="pl-4 py-1 italic border-l-2" style={{ borderColor: 'var(--accent)', color: 'var(--text-primary)' }}>
-                        "Always follow the DRY (Don't Repeat Yourself) principle.Messy codebases make development team operations hell."
+                      <p>
+                        I build real systems that solve real problems. My focus is on robust Express backend
+                        microservices, NoSQL aggregation structures, and designing self-improving RAG loops using
+                        LangGraph pipelines.
+                      </p>
+                      <blockquote
+                        className="pl-4 py-1 italic border-l-2"
+                        style={{ borderColor: 'var(--accent)', color: 'var(--text-primary)' }}
+                      >
+                        {
+                          '"Always follow the DRY (Don\'t Repeat Yourself) principle. Messy codebases make development team operations hell."'
+                        }
                       </blockquote>
                       <div className="grid grid-cols-2 gap-3 pt-2">
                         <div className="p-3 rounded border bg-black/10" style={{ borderColor: 'var(--border)' }}>
@@ -501,95 +527,302 @@ Available commands:
                   )}
 
                   {/* dsa_stats.json Render */}
-                  {activeFile === 'dsa_stats.json' && (
-                    <div className="space-y-6 w-full max-w-2xl">
-                      <div className="flex justify-between items-center border-b pb-2" style={{ borderColor: 'var(--border)' }}>
-                        <h3 className="font-display text-lg font-bold text-white">DSA Diagnostics Dashboard</h3>
-                        <span className="font-mono text-[10px] text-[var(--accent)]">leetcode: adityaroy18</span>
-                      </div>
+                  {activeFile === 'dsa_stats.json' &&
+                    (() => {
+                      const leetcodeTotal = 946 + 2061 + 937
+                      const leetcodePercent = (dsaStats.leetcode.solved / leetcodeTotal) * 100
+                      const gfgPercent = Math.min((dsaStats.gfg.solved / 500) * 100, 100)
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* LeetCode card */}
-                        <div className="p-4 rounded border bg-black/15 space-y-4" style={{ borderColor: 'var(--border)' }}>
-                          <div className="flex justify-between items-center">
-                            <span className="font-bold text-white">LeetCode Metrics</span>
-                            <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-400">active</span>
+                      return (
+                        <div className="space-y-5 w-full max-w-2xl select-none">
+                          {/* Terminal status bar */}
+                          <div
+                            className="flex justify-between items-center border-b pb-2"
+                            style={{ borderColor: 'var(--border)' }}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                              <h3 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                                [SYSTEM STATUS: ONLINE] // DSA_DIAGNOSTICS_V4.0.8
+                              </h3>
+                            </div>
+                            <span className="font-mono text-[9px] text-[var(--text-muted)]">
+                              User: {dsaStats.leetcode.username}
+                            </span>
                           </div>
-                          <div className="space-y-3">
-                            <div>
-                              <div className="flex justify-between text-[11px] mb-1">
-                                <span>Solved Problems</span>
-                                <span className="font-bold text-white">{dsaStats.leetcode.solved} / 3944</span>
-                              </div>
-                              {/* progress bars */}
-                              <div className="space-y-1">
-                                <div className="flex justify-between text-[9px] text-[var(--text-muted)]">
-                                  <span>Easy: {dsaStats.leetcode.easy}</span>
-                                  <span>Medium: {dsaStats.leetcode.medium}</span>
-                                  <span>Hard: {dsaStats.leetcode.hard}</span>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* LeetCode card */}
+                            <div
+                              className="p-4 rounded border bg-black/15 flex flex-col justify-between"
+                              style={{ borderColor: 'var(--border)' }}
+                            >
+                              <div>
+                                <div className="flex justify-between items-center mb-4 pb-2 border-b border-white/5">
+                                  <span className="font-bold text-white flex items-center gap-1.5">
+                                    <SiLeetcode size={14} className="text-[#ffa116]" /> LeetCode Metrics
+                                  </span>
+                                  <span className="font-mono text-[8px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20 uppercase tracking-widest">
+                                    connected
+                                  </span>
                                 </div>
-                                <div className="w-full h-2 bg-black/40 rounded-full flex overflow-hidden">
-                                  <div className="bg-green-400 h-full" style={{ width: `${(dsaStats.leetcode.easy / dsaStats.leetcode.solved * 100).toFixed(1)}%` }} />
-                                  <div className="bg-amber-400 h-full" style={{ width: `${(dsaStats.leetcode.medium / dsaStats.leetcode.solved * 100).toFixed(1)}%` }} />
-                                  <div className="bg-rose-400 h-full" style={{ width: `${(dsaStats.leetcode.hard / dsaStats.leetcode.solved * 100).toFixed(1)}%` }} />
+
+                                <div className="grid grid-cols-12 gap-3 items-center">
+                                  {/* SVG Gauge */}
+                                  <div className="col-span-5 flex justify-center">
+                                    <div className="relative w-20 h-20 flex items-center justify-center">
+                                      <svg className="w-full h-full transform -rotate-90">
+                                        <circle
+                                          cx="40"
+                                          cy="40"
+                                          r="32"
+                                          stroke="rgba(255,255,255,0.05)"
+                                          strokeWidth="4"
+                                          fill="transparent"
+                                        />
+                                        <motion.circle
+                                          cx="40"
+                                          cy="40"
+                                          r="32"
+                                          stroke="#ffa116"
+                                          strokeWidth="4"
+                                          fill="transparent"
+                                          strokeDasharray={2 * Math.PI * 32}
+                                          initial={{ strokeDashoffset: 2 * Math.PI * 32 }}
+                                          animate={{ strokeDashoffset: 2 * Math.PI * 32 * (1 - leetcodePercent / 100) }}
+                                          transition={{ duration: 1.5, ease: 'easeOut' }}
+                                          strokeLinecap="round"
+                                        />
+                                      </svg>
+                                      <div className="absolute flex flex-col items-center justify-center">
+                                        <span className="font-display text-base font-bold text-white leading-none mb-0.5">
+                                          {dsaStats.leetcode.solved}
+                                        </span>
+                                        <span className="font-mono text-[7px] uppercase tracking-wider text-[var(--text-muted)]">
+                                          Solved
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Bars */}
+                                  <div className="col-span-7 space-y-2">
+                                    <div className="space-y-0.5">
+                                      <div className="flex justify-between font-mono text-[8px] text-[var(--text-muted)]">
+                                        <span>Easy</span>
+                                        <span>{dsaStats.leetcode.easy}/946</span>
+                                      </div>
+                                      <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
+                                        <motion.div
+                                          className="h-full bg-green-400"
+                                          initial={{ width: 0 }}
+                                          animate={{ width: `${((dsaStats.leetcode.easy / 946) * 100).toFixed(1)}%` }}
+                                          transition={{ duration: 1.2, ease: 'easeOut' }}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-0.5">
+                                      <div className="flex justify-between font-mono text-[8px] text-[var(--text-muted)]">
+                                        <span>Med</span>
+                                        <span>{dsaStats.leetcode.medium}/2061</span>
+                                      </div>
+                                      <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
+                                        <motion.div
+                                          className="h-full bg-amber-400"
+                                          initial={{ width: 0 }}
+                                          animate={{
+                                            width: `${((dsaStats.leetcode.medium / 2061) * 100).toFixed(1)}%`,
+                                          }}
+                                          transition={{ duration: 1.2, ease: 'easeOut', delay: 0.1 }}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-0.5">
+                                      <div className="flex justify-between font-mono text-[8px] text-[var(--text-muted)]">
+                                        <span>Hard</span>
+                                        <span>{dsaStats.leetcode.hard}/937</span>
+                                      </div>
+                                      <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
+                                        <motion.div
+                                          className="h-full bg-rose-400"
+                                          initial={{ width: 0 }}
+                                          animate={{ width: `${((dsaStats.leetcode.hard / 937) * 100).toFixed(1)}%` }}
+                                          transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
+                              </div>
+
+                              <div className="border-t border-white/5 pt-2 mt-4 flex justify-between font-mono text-[9px] text-[var(--text-muted)]">
+                                <span className="flex items-center gap-1">
+                                  <FiTrendingUp className="text-[#ffa116]" size={11} /> Rating:
+                                </span>
+                                <span className="font-bold text-white">
+                                  {dsaStats.leetcode.contest_rating.toLocaleString()}
+                                </span>
                               </div>
                             </div>
 
-                            <div className="border-t pt-2 mt-2 flex justify-between text-[11px]">
-                              <span>Contest Rating:</span>
-                              <span className="font-bold text-[var(--accent)]">{dsaStats.leetcode.contest_rating.toLocaleString()}</span>
-                            </div>
-                          </div>
-                        </div>
+                            {/* GeeksForGeeks card */}
+                            <div
+                              className="p-4 rounded border bg-black/15 flex flex-col justify-between"
+                              style={{ borderColor: 'var(--border)' }}
+                            >
+                              <div>
+                                <div className="flex justify-between items-center mb-4 pb-2 border-b border-white/5">
+                                  <span className="font-bold text-white flex items-center gap-1.5">
+                                    <SiGeeksforgeeks size={14} className="text-[#2f8d46]" /> GFG Metrics
+                                  </span>
+                                  <span className="font-mono text-[8px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20 uppercase tracking-widest">
+                                    active
+                                  </span>
+                                </div>
 
-                        {/* GFG card */}
-                        <div className="p-4 rounded border bg-black/15 space-y-4" style={{ borderColor: 'var(--border)' }}>
-                          <div className="flex justify-between items-center">
-                            <span className="font-bold text-white">GeeksForGeeks Metrics</span>
-                            <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-400">active</span>
-                          </div>
-                          <div className="space-y-3">
-                            <div className="flex justify-between text-[11px]">
-                              <span>Solved Problems:</span>
-                              <span className="font-bold text-white">{dsaStats.gfg.solved}</span>
-                            </div>
-                            <div className="flex justify-between text-[11px]">
-                              <span>Coding Score:</span>
-                              <span className="font-bold text-white">{dsaStats.gfg.coding_score}</span>
-                            </div>
-                            <div className="flex justify-between text-[11px]">
-                              <span>KIIT Institute Rank:</span>
-                              <span className="font-bold text-[var(--accent)]">#{dsaStats.gfg.institute_rank}</span>
-                            </div>
-                            {/* progress bar */}
-                            <div className="w-full h-1.5 bg-black/40 rounded-full flex overflow-hidden">
-                              <div className="bg-green-400 h-full" style={{ width: `${(dsaStats.gfg.easy / dsaStats.gfg.solved * 100).toFixed(1)}%` }} />
-                              <div className="bg-amber-400 h-full" style={{ width: `${(dsaStats.gfg.medium / dsaStats.gfg.solved * 100).toFixed(1)}%` }} />
-                              <div className="bg-rose-400 h-full" style={{ width: `${(dsaStats.gfg.hard / dsaStats.gfg.solved * 100).toFixed(1)}%` }} />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                                <div className="grid grid-cols-12 gap-3 items-center">
+                                  {/* SVG Gauge */}
+                                  <div className="col-span-5 flex justify-center">
+                                    <div className="relative w-20 h-20 flex items-center justify-center">
+                                      <svg className="w-full h-full transform -rotate-90">
+                                        <circle
+                                          cx="40"
+                                          cy="40"
+                                          r="32"
+                                          stroke="rgba(255,255,255,0.05)"
+                                          strokeWidth="4"
+                                          fill="transparent"
+                                        />
+                                        <motion.circle
+                                          cx="40"
+                                          cy="40"
+                                          r="32"
+                                          stroke="#2f8d46"
+                                          strokeWidth="4"
+                                          fill="transparent"
+                                          strokeDasharray={2 * Math.PI * 32}
+                                          initial={{ strokeDashoffset: 2 * Math.PI * 32 }}
+                                          animate={{ strokeDashoffset: 2 * Math.PI * 32 * (1 - gfgPercent / 100) }}
+                                          transition={{ duration: 1.5, ease: 'easeOut' }}
+                                          strokeLinecap="round"
+                                        />
+                                      </svg>
+                                      <div className="absolute flex flex-col items-center justify-center">
+                                        <span className="font-display text-base font-bold text-white leading-none mb-0.5">
+                                          {dsaStats.gfg.solved}
+                                        </span>
+                                        <span className="font-mono text-[7px] uppercase tracking-wider text-[var(--text-muted)]">
+                                          Solved
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
 
-                      {/* Badges strip */}
-                      <div className="p-4 rounded border bg-black/10 flex items-center justify-around gap-4" style={{ borderColor: 'var(--border)' }}>
-                        <div className="flex items-center gap-2">
-                          <FiAward size={18} style={{ color: 'var(--accent)' }} />
-                          <span>50 Days Badge 2026</span>
+                                  {/* Bars */}
+                                  <div className="col-span-7 space-y-2">
+                                    <div className="space-y-0.5">
+                                      <div className="flex justify-between font-mono text-[8px] text-[var(--text-muted)]">
+                                        <span>Easy</span>
+                                        <span>{dsaStats.gfg.easy} Solved</span>
+                                      </div>
+                                      <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
+                                        <motion.div
+                                          className="h-full bg-green-400"
+                                          initial={{ width: 0 }}
+                                          animate={{
+                                            width: `${((dsaStats.gfg.easy / dsaStats.gfg.solved) * 100).toFixed(1)}%`,
+                                          }}
+                                          transition={{ duration: 1.2, ease: 'easeOut' }}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-0.5">
+                                      <div className="flex justify-between font-mono text-[8px] text-[var(--text-muted)]">
+                                        <span>Med</span>
+                                        <span>{dsaStats.gfg.medium} Solved</span>
+                                      </div>
+                                      <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
+                                        <motion.div
+                                          className="h-full bg-amber-400"
+                                          initial={{ width: 0 }}
+                                          animate={{
+                                            width: `${((dsaStats.gfg.medium / dsaStats.gfg.solved) * 100).toFixed(1)}%`,
+                                          }}
+                                          transition={{ duration: 1.2, ease: 'easeOut', delay: 0.1 }}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-0.5">
+                                      <div className="flex justify-between font-mono text-[8px] text-[var(--text-muted)]">
+                                        <span>Hard</span>
+                                        <span>{dsaStats.gfg.hard} Solved</span>
+                                      </div>
+                                      <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
+                                        <motion.div
+                                          className="h-full bg-rose-400"
+                                          initial={{ width: 0 }}
+                                          animate={{
+                                            width: `${((dsaStats.gfg.hard / dsaStats.gfg.solved) * 100).toFixed(1)}%`,
+                                          }}
+                                          transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="border-t border-white/5 pt-2 mt-4 flex justify-between font-mono text-[9px] text-[var(--text-muted)]">
+                                <span className="flex items-center gap-1">
+                                  <FiAward className="text-[#2f8d46]" size={11} /> Score:
+                                </span>
+                                <span className="font-bold text-white">{dsaStats.gfg.coding_score}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Badges strip */}
+                          <div
+                            className="p-3 rounded border bg-black/10 flex items-center justify-around gap-4 text-[10px]"
+                            style={{ borderColor: 'var(--border)' }}
+                          >
+                            <div className="flex items-center gap-1.5 text-orange-400/90 font-mono">
+                              <span className="text-xs">★</span>
+                              <span>50-Day Badge</span>
+                            </div>
+                            <div className="w-[1px] h-3 bg-white/10" />
+                            <div className="flex items-center gap-1.5 text-green-400/90 font-mono">
+                              <span className="text-xs">⚙</span>
+                              <span>100-Day Badge</span>
+                            </div>
+                            <div className="w-[1px] h-3 bg-white/10" />
+                            <div className="flex items-center gap-1.5 text-yellow-400/90 font-mono">
+                              <span className="text-xs">▲</span>
+                              <span>Top 10 College DSA Champ</span>
+                            </div>
+                          </div>
+
+                          {/* Footer Status diagnostics */}
+                          <div className="text-center font-mono text-[8px] text-[var(--text-muted)] tracking-wider">
+                            {'LAST DIAGNOSTIC RUN: ' +
+                              new Date().toISOString().split('T')[0] +
+                              ' // CACHE_HIT // ALL SYSTEMS OPERATIONAL'}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <FiActivity size={18} style={{ color: 'var(--accent)' }} />
-                          <span>100 Days Badge</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                      )
+                    })()}
 
                   {/* git_log.sh Render */}
                   {activeFile === 'git_log.sh' && (
                     <div className="space-y-6 w-full max-w-2xl text-left">
-                      <div className="border-b pb-2 flex justify-between items-center" style={{ borderColor: 'var(--border)' }}>
+                      <div
+                        className="border-b pb-2 flex justify-between items-center"
+                        style={{ borderColor: 'var(--border)' }}
+                      >
                         <h3 className="font-display text-lg font-bold text-white">Visual Git Timeline Graph</h3>
                         <span className="font-mono text-[10px] text-[var(--accent)]">branch: master</span>
                       </div>
@@ -603,42 +836,82 @@ Available commands:
                         <div className="relative flex gap-3">
                           <div className="w-3.5 h-3.5 rounded-full bg-green-500 border border-black z-10 animate-pulse mt-1" />
                           <div>
-                            <span className="font-mono text-[9px] bg-green-500/10 text-green-400 border border-green-500/20 px-1.5 py-0.5 rounded">fa7e2c3</span>
-                            <h4 className="font-bold text-white text-xs mt-1">[2026] HackwithInfy physical final round selection</h4>
-                            <p className="text-[10px] text-[var(--text-muted)]">Cleared Round 1 online and Round 2 physical mode, interviewed for Specialist L1 role.</p>
+                            <span className="font-mono text-[9px] bg-green-500/10 text-green-400 border border-green-500/20 px-1.5 py-0.5 rounded">
+                              a52f89c
+                            </span>
+                            <h4 className="font-bold text-white text-xs mt-1">
+                              [2026] Deployed Wushu Assessment Platform (WAP) Live
+                            </h4>
+                            <p className="text-[10px] text-[var(--text-muted)]">
+                              Launched automated exam engine. Implemented docx XML regex parsing, out-of-order packet
+                              queue checks, NTP time deadline guards, and IP/UA browser footprint locks.
+                            </p>
                           </div>
                         </div>
 
                         <div className="relative flex gap-3">
                           <div className="w-3.5 h-3.5 rounded-full bg-[var(--accent)] border border-black z-10 mt-1" />
                           <div>
-                            <span className="font-mono text-[9px] bg-[var(--accent-muted)] text-[var(--accent)] border border-accent/20 px-1.5 py-0.5 rounded">e89d0b4</span>
-                            <h4 className="font-bold text-white text-xs mt-1">[2026] Shortlisted for Capgemini Agent Challenge & Cognizant Technoverse</h4>
-                            <p className="text-[10px] text-[var(--text-muted)]">Round 2 selection for automated node-based insurance routing pipelines.</p>
+                            <span className="font-mono text-[9px] bg-[var(--accent-muted)] text-[var(--accent)] border border-accent/20 px-1.5 py-0.5 rounded">
+                              fa7e2c3
+                            </span>
+                            <h4 className="font-bold text-white text-xs mt-1">
+                              [2026] HackwithInfy physical final round selection
+                            </h4>
+                            <p className="text-[10px] text-[var(--text-muted)]">
+                              Cleared Round 1 online and Round 2 physical mode, interviewed for Specialist L1 role.
+                            </p>
                           </div>
                         </div>
 
                         <div className="relative flex gap-3">
                           <div className="w-3.5 h-3.5 rounded-full bg-[var(--accent)] border border-black z-10 mt-1" />
                           <div>
-                            <span className="font-mono text-[9px] bg-[var(--accent-muted)] text-[var(--accent)] border border-accent/20 px-1.5 py-0.5 rounded">d43f11a</span>
-                            <h4 className="font-bold text-white text-xs mt-1">[2025] Launched Wushu-MIS Live SaaS (233 endpoints)</h4>
-                            <p className="text-[10px] text-[var(--text-muted)]">Delivered event-scoped database operations, Dynamic RBAC collection middlewares, and SSE loops.</p>
+                            <span className="font-mono text-[9px] bg-[var(--accent-muted)] text-[var(--accent)] border border-accent/20 px-1.5 py-0.5 rounded">
+                              e89d0b4
+                            </span>
+                            <h4 className="font-bold text-white text-xs mt-1">
+                              [2026] Shortlisted for Capgemini Agent Challenge & Cognizant Technoverse
+                            </h4>
+                            <p className="text-[10px] text-[var(--text-muted)]">
+                              Round 2 selection for automated node-based insurance routing pipelines.
+                            </p>
                           </div>
                         </div>
 
                         <div className="relative flex gap-3">
                           <div className="w-3.5 h-3.5 rounded-full bg-[var(--accent)] border border-black z-10 mt-1" />
                           <div>
-                            <span className="font-mono text-[9px] bg-[var(--accent-muted)] text-[var(--accent)] border border-accent/20 px-1.5 py-0.5 rounded">c12d098</span>
-                            <h4 className="font-bold text-white text-xs mt-1">[2025] Selected for Amazon ML Summer School</h4>
-                            <p className="text-[10px] text-[var(--text-muted)]">Invited to Amazon ML cohort after clearing competitive DSA selection test.</p>
+                            <span className="font-mono text-[9px] bg-[var(--accent-muted)] text-[var(--accent)] border border-accent/20 px-1.5 py-0.5 rounded">
+                              d43f11a
+                            </span>
+                            <h4 className="font-bold text-white text-xs mt-1">
+                              [2025] Launched Wushu-MIS Live SaaS (233 endpoints)
+                            </h4>
+                            <p className="text-[10px] text-[var(--text-muted)]">
+                              Delivered event-scoped database operations, Dynamic RBAC collection middlewares, and SSE
+                              loops.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="relative flex gap-3">
+                          <div className="w-3.5 h-3.5 rounded-full bg-[var(--accent)] border border-black z-10 mt-1" />
+                          <div>
+                            <span className="font-mono text-[9px] bg-[var(--accent-muted)] text-[var(--accent)] border border-accent/20 px-1.5 py-0.5 rounded">
+                              c12d098
+                            </span>
+                            <h4 className="font-bold text-white text-xs mt-1">
+                              [2025] Selected for Amazon ML Summer School
+                            </h4>
+                            <p className="text-[10px] text-[var(--text-muted)]">
+                              Invited to Amazon ML cohort after clearing competitive DSA selection test.
+                            </p>
                           </div>
                         </div>
                       </div>
                     </div>
                   )}
-
                 </div>
               )
             ) : (
@@ -664,10 +937,15 @@ Available commands:
               <div className="w-10 h-0.5 rounded-full transition-colors group-hover:bg-[var(--accent)] bg-white/10" />
             </div>
             {/* Terminal Tab header */}
-            <div className="px-4 py-1.5 bg-black/20 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
+            <div
+              className="px-4 py-1.5 bg-black/20 border-b flex items-center justify-between"
+              style={{ borderColor: 'var(--border)' }}
+            >
               <div className="flex items-center gap-2">
                 <FiTerminal size={11} style={{ color: 'var(--accent)' }} />
-                <span className="font-bold text-[9px]" style={{ color: 'var(--text-secondary)' }}>TERMINAL</span>
+                <span className="font-bold text-[9px]" style={{ color: 'var(--text-secondary)' }}>
+                  TERMINAL
+                </span>
               </div>
               <span className="text-[9px] select-none" style={{ color: 'var(--text-muted)' }}>
                 {terminalHeight}px ↕ drag to resize
@@ -680,7 +958,9 @@ Available commands:
                 if (log.type === 'input') {
                   return (
                     <div key={idx} className="flex items-center">
-                      <span className="mr-1.5" style={{ color: 'var(--accent)' }}>guest@aditya:~$</span>
+                      <span className="mr-1.5" style={{ color: 'var(--accent)' }}>
+                        guest@aditya:~$
+                      </span>
                       <span style={{ color: 'var(--text-primary)' }}>{log.text}</span>
                     </div>
                   )
@@ -700,7 +980,9 @@ Available commands:
 
             {/* Terminal input prompt */}
             <div className="px-4 py-2 border-t bg-black/15 flex items-center" style={{ borderColor: 'var(--border)' }}>
-              <span className="mr-1.5 select-none" style={{ color: 'var(--accent)' }}>guest@aditya:~$</span>
+              <span className="mr-1.5 select-none" style={{ color: 'var(--accent)' }}>
+                guest@aditya:~$
+              </span>
               <input
                 ref={inputRef}
                 type="text"
@@ -718,7 +1000,7 @@ Available commands:
           </div>
         </div>
       </div>
-    </div>
+    </TiltCard>
   )
 }
 

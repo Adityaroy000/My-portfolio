@@ -334,22 +334,114 @@ img {
 }
 
 /* ── IDE Syntax Highlighting Classes ── */
-.ide-key { color: #61afef; font-weight: 500; }
-.ide-string { color: #98c379; }
-.ide-number { color: #d19a66; }
-.ide-boolean { color: #c678dd; }
-.ide-comment { color: #5c6370; font-style: italic; }
-.ide-keyword { color: #c678dd; font-weight: bold; }
-.ide-hash { color: #e5c07b; }
-.ide-header { color: var(--accent); font-weight: bold; }
-.ide-bullet { color: var(--accent); }
+.ide-key {
+  color: #61afef;
+  font-weight: 500;
+}
+.ide-string {
+  color: #98c379;
+}
+.ide-number {
+  color: #d19a66;
+}
+.ide-boolean {
+  color: #c678dd;
+}
+.ide-comment {
+  color: #5c6370;
+  font-style: italic;
+}
+.ide-keyword {
+  color: #c678dd;
+  font-weight: bold;
+}
+.ide-hash {
+  color: #e5c07b;
+}
+.ide-header {
+  color: var(--accent);
+  font-weight: bold;
+}
+.ide-bullet {
+  color: var(--accent);
+}
 
 /* Theme hacker overrides */
-html.theme-hacker .ide-key { color: #00ff66; font-weight: bold; }
-html.theme-hacker .ide-string { color: #a3ffa3; }
-html.theme-hacker .ide-number { color: #00ff66; }
-html.theme-hacker .ide-boolean { color: #e6ffe6; }
-html.theme-hacker .ide-comment { color: #59b359; }
-html.theme-hacker .ide-keyword { color: #00ff66; }
-html.theme-hacker .ide-hash { color: #a3ffa3; }
-html.theme-hacker .ide-header { color: #00ff66; }
+html.theme-hacker .ide-key {
+  color: #00ff66;
+  font-weight: bold;
+}
+html.theme-hacker .ide-string {
+  color: #a3ffa3;
+}
+html.theme-hacker .ide-number {
+  color: #00ff66;
+}
+html.theme-hacker .ide-boolean {
+  color: #e6ffe6;
+}
+html.theme-hacker .ide-comment {
+  color: #59b359;
+}
+html.theme-hacker .ide-keyword {
+  color: #00ff66;
+}
+html.theme-hacker .ide-hash {
+  color: #a3ffa3;
+}
+html.theme-hacker .ide-header {
+  color: #00ff66;
+}
+
+/* ── 3D Tilt Card & Mouse Spotlight Styles ── */
+.tilt-card-glow {
+  position: relative;
+  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition:
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+    box-shadow 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+    border-color 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.tilt-card-glow:hover {
+  transition:
+    transform 0.1s cubic-bezier(0.25, 1, 0.5, 1),
+    box-shadow 0.1s cubic-bezier(0.25, 1, 0.5, 1),
+    border-color 0.1s cubic-bezier(0.25, 1, 0.5, 1);
+  border-color: var(--border-hover) !important;
+}
+
+.tilt-card-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(400px circle at var(--mx, 50%) var(--my, 50%), var(--accent-muted), transparent 60%);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.tilt-card-glow:hover::before {
+  opacity: 1;
+}
+
+/* ── 3D Carousel Variables & Classes ── */
+:root {
+  --tz: 340px;
+  --card-w: 380px;
+  --card-h: 220px;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --tz: 160px;
+    --card-w: 250px;
+    --card-h: 150px;
+  }
+}
+
+.carousel-card-reflect {
+  -webkit-box-reflect: below 8px linear-gradient(transparent, rgba(0, 0, 0, 0.15));
+}

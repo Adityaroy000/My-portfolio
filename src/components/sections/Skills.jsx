@@ -17,16 +17,10 @@ const ANGLES = [
   -Math.PI / 2 + (2 * Math.PI) / 5, // Right-Top
   -Math.PI / 2 + (4 * Math.PI) / 5, // Right-Bottom
   -Math.PI / 2 + (6 * Math.PI) / 5, // Left-Bottom
-  -Math.PI / 2 + (8 * Math.PI) / 5  // Left-Top
+  -Math.PI / 2 + (8 * Math.PI) / 5, // Left-Top
 ]
 
-const AXIS_LABELS = [
-  'DSA_ALGO',
-  'AI_AGENTS',
-  'DB_MODEL',
-  'SECURITY_RBAC',
-  'API_DESIGN'
-]
+const AXIS_LABELS = ['DSA_ALGO', 'AI_AGENTS', 'DB_MODEL', 'SECURITY_RBAC', 'API_DESIGN']
 
 // Stats mapping for each category on the 5 axes
 const MATRIX_MAP = {
@@ -37,7 +31,7 @@ const MATRIX_MAP = {
   databases: [0.6, 0.6, 0.98, 0.75, 0.8],
   'ai-ml': [0.75, 0.98, 0.85, 0.5, 0.7],
   tools: [0.5, 0.6, 0.65, 0.95, 0.8],
-  'cs-fundamentals': [0.92, 0.5, 0.8, 0.75, 0.7]
+  'cs-fundamentals': [0.92, 0.5, 0.8, 0.75, 0.7],
 }
 
 const getPathData = (values) => {
@@ -53,11 +47,11 @@ const getPathData = (values) => {
 const getLabelProps = (angle) => {
   const x = 150 + 120 * Math.cos(angle)
   const y = 150 + 120 * Math.sin(angle)
-  
+
   let textAnchor = 'middle'
   if (Math.cos(angle) > 0.1) textAnchor = 'start'
   else if (Math.cos(angle) < -0.1) textAnchor = 'end'
-  
+
   let dy = '0.35em'
   if (Math.sin(angle) < -0.8) dy = '-0.3em'
   else if (Math.sin(angle) > 0.8) dy = '1em'
@@ -67,7 +61,7 @@ const getLabelProps = (angle) => {
 
 const Skills = () => {
   const [hoveredCategory, setHoveredCategory] = useState(null)
-  
+
   const activeMatrix = MATRIX_MAP[hoveredCategory] || MATRIX_MAP.default
   const pathData = getPathData(activeMatrix)
   const gridLevels = [0.2, 0.4, 0.6, 0.8, 1.0]
@@ -127,17 +121,20 @@ const Skills = () => {
 
           {/* RIGHT — Interactive Radar Specs Chart */}
           <div className="col-span-12 lg:col-span-5 order-1 lg:order-2 flex flex-col items-center justify-center sticky top-24 py-6">
-            <div 
+            <div
               className="p-6 rounded-2xl border backdrop-blur-md relative shadow-2xl flex flex-col items-center"
               style={{
                 background: 'color-mix(in srgb, var(--bg-secondary) 40%, transparent)',
                 borderColor: 'var(--border)',
                 width: '100%',
-                maxWidth: '380px'
+                maxWidth: '380px',
               }}
             >
               {/* Floating description label */}
-              <div className="absolute top-4 left-5 right-5 flex justify-between items-center border-b pb-2 select-none" style={{ borderColor: 'var(--border)' }}>
+              <div
+                className="absolute top-4 left-5 right-5 flex justify-between items-center border-b pb-2 select-none"
+                style={{ borderColor: 'var(--border)' }}
+              >
                 <span className="font-mono text-[10px] tracking-wider text-[var(--accent)]">
                   {hoveredCategory ? `spec::${hoveredCategory.replace('-', '_')}` : 'spec::composite_profile'}
                 </span>
@@ -145,8 +142,8 @@ const Skills = () => {
               </div>
 
               {/* Chart SVG */}
-              <svg 
-                viewBox="0 0 300 320" 
+              <svg
+                viewBox="0 0 300 320"
                 className="w-full h-auto mt-6"
                 aria-label="Developer attribute radar specs chart"
               >
@@ -154,7 +151,9 @@ const Skills = () => {
                 {gridLevels.map((level) => (
                   <polygon
                     key={level}
-                    points={ANGLES.map(angle => `${150 + 100 * level * Math.cos(angle)},${150 + 100 * level * Math.sin(angle)}`).join(' ')}
+                    points={ANGLES.map(
+                      (angle) => `${150 + 100 * level * Math.cos(angle)},${150 + 100 * level * Math.sin(angle)}`,
+                    ).join(' ')}
                     fill="none"
                     stroke="var(--border)"
                     strokeWidth="0.75"
@@ -166,16 +165,7 @@ const Skills = () => {
                 {ANGLES.map((angle, idx) => {
                   const x = 150 + 100 * Math.cos(angle)
                   const y = 150 + 100 * Math.sin(angle)
-                  return (
-                    <circle
-                      key={idx}
-                      cx={x}
-                      cy={y}
-                      r="2"
-                      fill="var(--border)"
-                      opacity="0.8"
-                    />
-                  )
+                  return <circle key={idx} cx={x} cy={y} r="2" fill="var(--border)" opacity="0.8" />
                 })}
 
                 {/* Radial axes lines */}
@@ -205,7 +195,7 @@ const Skills = () => {
                   stroke="var(--accent)"
                   strokeWidth="1.5"
                   style={{
-                    filter: 'drop-shadow(0px 0px 6px var(--glow-strong))'
+                    filter: 'drop-shadow(0px 0px 6px var(--glow-strong))',
                   }}
                 />
 
@@ -240,7 +230,7 @@ const Skills = () => {
                       className="font-mono text-[9px] font-semibold select-none transition-colors duration-200"
                       fill={hoveredCategory ? 'var(--text-muted)' : 'var(--text-secondary)'}
                       style={{
-                        letterSpacing: '0.05em'
+                        letterSpacing: '0.05em',
                       }}
                     >
                       {AXIS_LABELS[idx]}

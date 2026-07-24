@@ -42,14 +42,14 @@ const FILES = {
   'about.md': ABOUT_TEXT,
   'dsa_stats.json': JSON.stringify(dsaStats, null, 2),
   'terminal_theme.conf': `default_theme = emerald\navailable_themes = [emerald, hacker, dark]`,
-  'wushu_mis_architecture.png': `[Binary PNG] Cannot display binary format in text terminal. Visit the Projects details for visual graph.`
+  'wushu_mis_architecture.png': `[Binary PNG] Cannot display binary format in text terminal. Visit the Projects details for visual graph.`,
 }
 
 const TerminalConsole = () => {
   const [history, setHistory] = useState([
     { type: 'output', text: 'Aditya Roy Dev OS [Version 1.0.4]' },
     { type: 'output', text: 'Type "help" to see available terminal commands.' },
-    { type: 'output', text: '' }
+    { type: 'output', text: '' },
   ])
   const [inputVal, setInputVal] = useState('')
   const outputEndRef = useRef(null)
@@ -104,7 +104,7 @@ GeeksForGeeks Stats (KIIT Institute Rank: ${dsaStats.gfg.institute_rank})
 Total Solved: ${dsaStats.gfg.solved}
 Coding Score: ${dsaStats.gfg.coding_score} | Institute Rank: ${dsaStats.gfg.institute_rank}
   Easy: ${dsaStats.gfg.easy} | Medium: ${dsaStats.gfg.medium} | Hard: ${dsaStats.gfg.hard}
-`
+`,
         })
         break
 
@@ -123,7 +123,7 @@ Coding Score: ${dsaStats.gfg.coding_score} | Institute Rank: ${dsaStats.gfg.inst
 * b34d98a [2024] Ranked Top 10 in KIIT DSA Championship (out of 600+ participants)
 * a09b87c [2023] Secured Grade O (Outstanding) in C Programming Lab (first competitive spark)
 * 0000000 [2023] Initial commit: Wrote first 'Hello World' in C language
-`
+`,
           })
         }
         break
@@ -167,15 +167,11 @@ Coding Score: ${dsaStats.gfg.coding_score} | Institute Rank: ${dsaStats.gfg.inst
       default:
         response.push({
           type: 'error',
-          text: `guest@aditya:~$ command not found: ${cmd}. Type 'help' to see instructions.`
+          text: `guest@aditya:~$ command not found: ${cmd}. Type 'help' to see instructions.`,
         })
     }
 
-    setHistory((prev) => [
-      ...prev,
-      { type: 'input', text: rawCmd },
-      ...response
-    ])
+    setHistory((prev) => [...prev, { type: 'input', text: rawCmd }, ...response])
     setInputVal('')
   }
 
@@ -194,7 +190,7 @@ Coding Score: ${dsaStats.gfg.coding_score} | Institute Rank: ${dsaStats.gfg.inst
         borderColor: 'var(--border)',
         height: '360px',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
       }}
     >
       {/* Title Bar */}
@@ -219,7 +215,9 @@ Coding Score: ${dsaStats.gfg.coding_score} | Institute Rank: ${dsaStats.gfg.inst
           if (log.type === 'input') {
             return (
               <div key={idx} className="flex items-center">
-                <span className="mr-2" style={{ color: 'var(--accent)' }}>guest@aditya:~$</span>
+                <span className="mr-2" style={{ color: 'var(--accent)' }}>
+                  guest@aditya:~$
+                </span>
                 <span style={{ color: 'var(--text-primary)' }}>{log.text}</span>
               </div>
             )
@@ -235,7 +233,7 @@ Coding Score: ${dsaStats.gfg.coding_score} | Institute Rank: ${dsaStats.gfg.inst
               style={{
                 color: colorClass,
                 whiteSpace: 'pre-wrap',
-                fontFamily: 'var(--font-mono)'
+                fontFamily: 'var(--font-mono)',
               }}
             >
               {log.text}

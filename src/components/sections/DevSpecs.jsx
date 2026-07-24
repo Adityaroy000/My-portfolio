@@ -1,234 +1,370 @@
 /**
  * DevSpecs.jsx
- * Interactive CS Developer Principles Dashboard. Features:
- *  - Live LeetCode/GFG visual progress charts and metrics.
- *  - Interactive DRY code refactoring slider showing clean vs redundant code.
+ * Symmetrical 3D DSA Stats and Environment Dashboard.
+ * Focuses purely on LeetCode and GeeksForGeeks milestones,
+ * featuring interactive SVG radial gauges and GPU-accelerated 3D tilts.
+ * Integrates real-time client-side fetching with static fallback.
  */
 
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import SectionTitle from '../ui/SectionTitle'
-import { FiCode, FiActivity, FiLayers, FiCheck } from 'react-icons/fi'
-import dsaStats from '../../data/dsa_stats.json'
-
-const WET_CODE = `// ❌ REDUNDANT (WET) CODE: Scattered database RBAC checks in every express endpoint
-app.get('/api/athletes', (req, res) => {
-  const user = req.user;
-  if (user.role === 'admin' || user.role === 'coordinator' || user.role === 'manager') {
-    // Database visibility query filtering by jurisdiction
-    db.collection('athletes').find({ district: user.district }).toArray((err, data) => {
-      res.json(data);
-    });
-  } else {
-    res.status(403).send("Unauthorized Access");
-  }
-});
-
-app.post('/api/athletes', (req, res) => {
-  const user = req.user;
-  if (user.role === 'admin' || user.role === 'coordinator') {
-    db.collection('athletes').insertOne(req.body, (err, result) => {
-      res.json(result);
-    });
-  } else {
-    res.status(403).send("Unauthorized Access");
-  }
-});`
-
-const DRY_CODE = `//  CLEAN (DRY) CODE: Declared central custom authorization middleware
-const authorize = (action, resource) => {
-  return async (req, res, next) => {
-    // Database-driven RBAC guard checking dynamic actions and scopes
-    const permitted = await RbacGuard.check(req.user.role, action, resource);
-    if (!permitted) return res.status(403).json({ error: 'Forbidden' });
-    
-    // Auto scoping dynamic queries using jurisdiction scope builder
-    req.dbQuery = queryScoper(req.user);
-    next();
-  };
-};
-
-app.get('/api/athletes', authorize('read', 'athletes'), async (req, res) => {
-  const data = await db.collection('athletes').find(req.dbQuery).toArray();
-  res.json(data);
-});
-
-app.post('/api/athletes', authorize('create', 'athletes'), async (req, res) => {
-  const result = await db.collection('athletes').insertOne(req.body);
-  res.json(result);
-});`
+import TiltCard from '../ui/TiltCard'
+import { SiLeetcode, SiGeeksforgeeks } from 'react-icons/si'
+import { FiTrendingUp, FiAward, FiCpu } from 'react-icons/fi'
+import staticDsaStats from '../../data/dsa_stats.json'
 
 const DevSpecs = () => {
-  const [isDry, setIsDry] = useState(false)
+  const [stats, setStats] = useState(staticDsaStats)
+
+  // Real-time client-side fetch with graceful static fallback
+  useEffect(() => {
+    const fetchRealTimeStats = async () => {
+      // 1. Fetch LeetCode Real-time solved counts
+      try {
+        const res = await fetch(`https://alfa-leetcode-api.onrender.com/${staticDsaStats.leetcode.username}/solved`)
+        if (res.ok) {
+          const data = await res.json()
+          setStats((prev) => ({
+            ...prev,
+            leetcode: {
+              ...prev.leetcode,
+              solved: data.solvedProblem || prev.leetcode.solved,
+              easy: data.easySolved || prev.leetcode.easy,
+              medium: data.mediumSolved || prev.leetcode.medium,
+              hard: data.hardSolved || prev.leetcode.hard,
+            },
+          }))
+        }
+      } catch (err) {
+        console.warn('Real-time LeetCode fetch failed, using fallback:', err.message)
+      }
+
+      // 2. Fetch GFG Real-time stats
+      try {
+        const res = await fetch(`https://gfgstatscard.vercel.app/${staticDsaStats.gfg.username}?raw=true`)
+        if (res.ok) {
+          const data = await res.json()
+          setStats((prev) => ({
+            ...prev,
+            gfg: {
+              ...prev.gfg,
+              solved: data.total_problems_solved || prev.gfg.solved,
+              coding_score: data.total_score || prev.gfg.coding_score,
+              easy: data.Easy || prev.gfg.easy,
+              medium: data.Medium || prev.gfg.medium,
+              hard: data.Hard || prev.gfg.hard,
+            },
+          }))
+        }
+      } catch (err) {
+        console.warn('Real-time GFG fetch failed, using fallback:', err.message)
+      }
+    }
+
+    fetchRealTimeStats()
+  }, [])
+
+  // LeetCode calculations
+  const leetcodeTotal = 946 + 2061 + 937 // 3944
+  const leetcodePercent = (stats.leetcode.solved / leetcodeTotal) * 100
+
+  // GFG calculations (relative to a benchmark target of 500 solved)
+  const gfgPercent = Math.min((stats.gfg.solved / 500) * 100, 100)
 
   return (
     <section
       id="specs"
-      className="section-padding"
-      style={{ background: 'var(--bg-primary)' }}
+      className="section-padding border-b"
+      style={{ background: 'var(--bg-primary)', borderColor: 'var(--border)' }}
       aria-label="Developer Specifications and Philosophy"
     >
-      <div className="container-main">
+      <div className="container-main text-center flex flex-col items-center">
         <SectionTitle number="08" title="Dev Dashboard & Specs" />
 
-        <div className="grid lg:grid-cols-2 gap-8 items-start">
-          {/* LEFT — Competitive Programming & DSA Dashboard */}
-          <div className="space-y-6 text-left">
-            <h3 className="font-display font-semibold text-lg" style={{ color: 'var(--text-primary)' }}>
-              🧠 Competitive Programming & DSA Stats
-            </h3>
-            <p className="font-sans text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              Real metrics from LeetCode ({dsaStats.leetcode.solved} solved, contest rating {dsaStats.leetcode.contest_rating.toLocaleString()}) and GeeksForGeeks ({dsaStats.gfg.solved} solved, rank {dsaStats.gfg.institute_rank} at KIIT).
-            </p>
+        <p className="font-sans text-sm text-[var(--text-secondary)] mb-12 max-w-2xl mx-auto">
+          Real-time tracking of my algorithm design journey across LeetCode and GeeksForGeeks, detailing problem-solving
+          difficulty breakdowns, contest ratings, and local system environments.
+        </p>
 
-            <div className="grid sm:grid-cols-2 gap-4">
-              {/* LeetCode stats card */}
-              <div className="p-5 rounded border" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
-                <p className="font-mono text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--accent)' }}>
-                  Leetcode Profile
-                </p>
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span>Solved Total:</span>
-                    <span className="font-semibold text-white">{dsaStats.leetcode.solved}</span>
+        {/* 3D Symmetrical Stats Cards */}
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl w-full mx-auto mb-12 text-left">
+          {/* LeetCode Card */}
+          <TiltCard
+            className="p-6 rounded-lg border flex flex-col justify-between"
+            style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+          >
+            <div>
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
+                <div className="flex items-center gap-2.5">
+                  <SiLeetcode size={20} className="text-[#ffa116]" />
+                  <span className="font-display font-semibold text-white">LeetCode Profile</span>
+                </div>
+                <a
+                  href={`https://leetcode.com/u/${stats.leetcode.username}/`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-[10px] text-[var(--accent)] hover:underline"
+                >
+                  @{stats.leetcode.username} ↗
+                </a>
+              </div>
+
+              {/* Body */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
+                {/* SVG Radial Progress Gauge */}
+                <div className="sm:col-span-5 flex justify-center">
+                  <div className="relative w-28 h-28 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle
+                        cx="56"
+                        cy="56"
+                        r="48"
+                        stroke="rgba(255,255,255,0.05)"
+                        strokeWidth="6"
+                        fill="transparent"
+                      />
+                      <motion.circle
+                        cx="56"
+                        cy="56"
+                        r="48"
+                        stroke="#ffa116"
+                        strokeWidth="6"
+                        fill="transparent"
+                        strokeDasharray={2 * Math.PI * 48}
+                        initial={{ strokeDashoffset: 2 * Math.PI * 48 }}
+                        animate={{ strokeDashoffset: 2 * Math.PI * 48 * (1 - leetcodePercent / 100) }}
+                        transition={{ duration: 1.5, ease: 'easeOut' }}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div className="absolute flex flex-col items-center justify-center">
+                      <span className="font-display text-2xl font-bold text-white">{stats.leetcode.solved}</span>
+                      <span className="font-mono text-[9px] uppercase tracking-wider text-[var(--text-muted)]">
+                        Solved
+                      </span>
+                    </div>
                   </div>
-                  {/* Progress bars */}
-                  <div className="space-y-1 pt-2">
-                    <div className="flex justify-between text-[10px]">
+                </div>
+
+                {/* Difficulty Bars */}
+                <div className="sm:col-span-7 space-y-3.5">
+                  {/* Easy */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between font-mono text-[10px] text-[var(--text-secondary)]">
                       <span>Easy</span>
-                      <span>{dsaStats.leetcode.easy}/946</span>
+                      <span>{stats.leetcode.easy} / 946</span>
                     </div>
                     <div className="w-full h-1.5 bg-black/35 rounded-full overflow-hidden">
-                      <div className="h-full bg-green-400" style={{ width: `${(dsaStats.leetcode.easy / 946 * 100).toFixed(1)}%` }} />
-                    </div>
-                    
-                    <div className="flex justify-between text-[10px] pt-1">
-                      <span>Medium</span>
-                      <span>{dsaStats.leetcode.medium}/2061</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-black/35 rounded-full overflow-hidden">
-                      <div className="h-full bg-amber-400" style={{ width: `${(dsaStats.leetcode.medium / 2061 * 100).toFixed(1)}%` }} />
-                    </div>
-
-                    <div className="flex justify-between text-[10px] pt-1">
-                      <span>Hard</span>
-                      <span>{dsaStats.leetcode.hard}/937</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-black/35 rounded-full overflow-hidden">
-                      <div className="h-full bg-rose-400" style={{ width: `${(dsaStats.leetcode.hard / 937 * 100).toFixed(1)}%` }} />
+                      <motion.div
+                        className="h-full bg-green-400"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${((stats.leetcode.easy / 946) * 100).toFixed(1)}%` }}
+                        transition={{ duration: 1.2, ease: 'easeOut' }}
+                      />
                     </div>
                   </div>
-                  <div className="border-t pt-3 mt-3 flex justify-between font-mono text-[10px]">
-                    <span>Contest Rating:</span>
-                    <span className="text-[var(--accent)]">{dsaStats.leetcode.contest_rating.toLocaleString()}</span>
+
+                  {/* Medium */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between font-mono text-[10px] text-[var(--text-secondary)]">
+                      <span>Medium</span>
+                      <span>{stats.leetcode.medium} / 2061</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-black/35 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-amber-400"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${((stats.leetcode.medium / 2061) * 100).toFixed(1)}%` }}
+                        transition={{ duration: 1.2, ease: 'easeOut', delay: 0.1 }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Hard */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between font-mono text-[10px] text-[var(--text-secondary)]">
+                      <span>Hard</span>
+                      <span>{stats.leetcode.hard} / 937</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-black/35 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-rose-400"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${((stats.leetcode.hard / 937) * 100).toFixed(1)}%` }}
+                        transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* GFG stats card */}
-              <div className="p-5 rounded border" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
-                <p className="font-mono text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--accent)' }}>
-                  GeeksForGeeks Profile
-                </p>
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span>Solved Total:</span>
-                    <span className="font-semibold text-white">{dsaStats.gfg.solved}</span>
+            {/* Footer metrics */}
+            <div className="grid grid-cols-2 gap-4 border-t border-white/5 pt-4 mt-6 font-mono text-[10px] text-[var(--text-secondary)]">
+              <div className="flex items-center gap-2">
+                <FiAward className="text-[#ffa116]" size={14} />
+                <div>
+                  <span className="block text-[8px] uppercase text-[var(--text-muted)]">Contest Rating</span>
+                  <span className="font-semibold text-white">{stats.leetcode.contest_rating.toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <FiTrendingUp className="text-[#ffa116]" size={14} />
+                <div>
+                  <span className="block text-[8px] uppercase text-[var(--text-muted)]">Attended</span>
+                  <span className="font-semibold text-white">{stats.leetcode.attended} Contests</span>
+                </div>
+              </div>
+            </div>
+          </TiltCard>
+
+          {/* GeeksForGeeks Card */}
+          <TiltCard
+            className="p-6 rounded-lg border flex flex-col justify-between"
+            style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+          >
+            <div>
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
+                <div className="flex items-center gap-2.5">
+                  <SiGeeksforgeeks size={20} className="text-[#2f8d46]" />
+                  <span className="font-display font-semibold text-white">GeeksForGeeks</span>
+                </div>
+                <a
+                  href={`https://auth.geeksforgeeks.org/user/${stats.gfg.username}/`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-[10px] text-[var(--accent)] hover:underline"
+                >
+                  @{stats.gfg.username} ↗
+                </a>
+              </div>
+
+              {/* Body */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
+                {/* SVG Radial Progress Gauge */}
+                <div className="sm:col-span-5 flex justify-center">
+                  <div className="relative w-28 h-28 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle
+                        cx="56"
+                        cy="56"
+                        r="48"
+                        stroke="rgba(255,255,255,0.05)"
+                        strokeWidth="6"
+                        fill="transparent"
+                      />
+                      <motion.circle
+                        cx="56"
+                        cy="56"
+                        r="48"
+                        stroke="#2f8d46"
+                        strokeWidth="6"
+                        fill="transparent"
+                        strokeDasharray={2 * Math.PI * 48}
+                        initial={{ strokeDashoffset: 2 * Math.PI * 48 }}
+                        animate={{ strokeDashoffset: 2 * Math.PI * 48 * (1 - gfgPercent / 100) }}
+                        transition={{ duration: 1.5, ease: 'easeOut' }}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div className="absolute flex flex-col items-center justify-center">
+                      <span className="font-display text-2xl font-bold text-white">{stats.gfg.solved}</span>
+                      <span className="font-mono text-[9px] uppercase tracking-wider text-[var(--text-muted)]">
+                        Solved
+                      </span>
+                    </div>
                   </div>
-                  {/* Progress bars */}
-                  <div className="space-y-1 pt-2">
-                    <div className="flex justify-between text-[10px]">
+                </div>
+
+                {/* Difficulty Bars */}
+                <div className="sm:col-span-7 space-y-3.5">
+                  {/* Easy */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between font-mono text-[10px] text-[var(--text-secondary)]">
                       <span>Easy</span>
-                      <span>{dsaStats.gfg.easy}</span>
+                      <span>{stats.gfg.easy} Solved</span>
                     </div>
                     <div className="w-full h-1.5 bg-black/35 rounded-full overflow-hidden">
-                      <div className="h-full bg-green-400" style={{ width: `${(dsaStats.gfg.easy / dsaStats.gfg.solved * 100).toFixed(1)}%` }} />
-                    </div>
-                    
-                    <div className="flex justify-between text-[10px] pt-1">
-                      <span>Medium</span>
-                      <span>{dsaStats.gfg.medium}</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-black/35 rounded-full overflow-hidden">
-                      <div className="h-full bg-amber-400" style={{ width: `${(dsaStats.gfg.medium / dsaStats.gfg.solved * 100).toFixed(1)}%` }} />
-                    </div>
-
-                    <div className="flex justify-between text-[10px] pt-1">
-                      <span>Hard</span>
-                      <span>{dsaStats.gfg.hard}</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-black/35 rounded-full overflow-hidden">
-                      <div className="h-full bg-rose-400" style={{ width: `${(dsaStats.gfg.hard / dsaStats.gfg.solved * 100).toFixed(1)}%` }} />
+                      <motion.div
+                        className="h-full bg-green-400"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${((stats.gfg.easy / stats.gfg.solved) * 100).toFixed(1)}%` }}
+                        transition={{ duration: 1.2, ease: 'easeOut' }}
+                      />
                     </div>
                   </div>
-                  <div className="border-t pt-3 mt-3 flex justify-between font-mono text-[10px]">
-                    <span>KIIT University Rank:</span>
-                    <span className="text-[var(--accent)]">#{dsaStats.gfg.institute_rank}</span>
+
+                  {/* Medium */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between font-mono text-[10px] text-[var(--text-secondary)]">
+                      <span>Medium</span>
+                      <span>{stats.gfg.medium} Solved</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-black/35 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-amber-400"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${((stats.gfg.medium / stats.gfg.solved) * 100).toFixed(1)}%` }}
+                        transition={{ duration: 1.2, ease: 'easeOut', delay: 0.1 }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Hard */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between font-mono text-[10px] text-[var(--text-secondary)]">
+                      <span>Hard</span>
+                      <span>{stats.gfg.hard} Solved</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-black/35 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-rose-400"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${((stats.gfg.hard / stats.gfg.solved) * 100).toFixed(1)}%` }}
+                        transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Quick Environment Specs */}
-            <div className="p-4 rounded border font-mono text-xs" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
-              <p className="font-mono text-xs tracking-wider mb-2 text-[var(--accent)]">{'// System Specs'}</p>
-              <div className="grid grid-cols-2 gap-2 text-[10px]" style={{ color: 'var(--text-secondary)' }}>
-                <div>OS: Windows 11</div>
-                <div>Shell: PowerShell / cmd</div>
-                <div>IDE: VS Code (Dark Theme)</div>
-                <div>Navigation: Standard Keyboard/Mouse</div>
+            {/* Footer metrics */}
+            <div className="grid grid-cols-2 gap-4 border-t border-white/5 pt-4 mt-6 font-mono text-[10px] text-[var(--text-secondary)]">
+              <div className="flex items-center gap-2">
+                <FiAward className="text-[#2f8d46]" size={14} />
+                <div>
+                  <span className="block text-[8px] uppercase text-[var(--text-muted)]">Coding Score</span>
+                  <span className="font-semibold text-white">{stats.gfg.coding_score}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <FiCpu className="text-[#2f8d46]" size={14} />
+                <div>
+                  <span className="block text-[8px] uppercase text-[var(--text-muted)]">Institute Rank</span>
+                  <span className="font-semibold text-white">#{stats.gfg.institute_rank}</span>
+                </div>
               </div>
             </div>
-          </div>
+          </TiltCard>
+        </div>
 
-          {/* RIGHT — Interactive DRY Refactoring Code comparison */}
-          <div className="space-y-4 text-left">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display font-semibold text-lg" style={{ color: 'var(--text-primary)' }}>
-                ⚖️ The DRY Principle in Action
-              </h3>
-              <button
-                onClick={() => setIsDry(!isDry)}
-                className="btn-ghost flex items-center gap-2 cursor-pointer"
-                style={{ padding: '0.4rem 0.9rem', fontSize: '10px' }}
-              >
-                {isDry ? <FiCheck /> : <FiCode />}
-                {isDry ? 'View Wet Code' : 'Refactor Code'}
-              </button>
-            </div>
-
-            <p className="font-sans text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              See how duplication is replaced with clean backend abstraction. Slider code shows the actual Wushu-MIS authorization refactoring.
-            </p>
-
-            <div
-              className="rounded-lg overflow-hidden border font-mono text-[10px] leading-relaxed shadow-lg relative h-[360px] flex flex-col"
-              style={{ background: 'var(--bg-tertiary)', borderColor: 'var(--border)' }}
-            >
-              {/* Header bar */}
-              <div className="px-4 py-2 border-b bg-black/15 flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-                <span className="text-[9px] text-[var(--text-muted)]">
-                  {isDry ? 'controllers/athletes.dry.js' : 'controllers/athletes.wet.js'}
-                </span>
-                <span className="w-2 h-2 rounded-full" style={{ background: isDry ? '#4ade80' : '#ff5f56' }} />
-              </div>
-
-              {/* Code Pane */}
-              <div className="flex-1 p-4 overflow-auto custom-scrollbar">
-                <AnimatePresence mode="wait">
-                  <motion.pre
-                    key={isDry}
-                    initial={{ opacity: 0, x: isDry ? 20 : -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: isDry ? -20 : 20 }}
-                    transition={{ duration: 0.3 }}
-                    style={{ whiteSpace: 'pre', fontFamily: 'var(--font-mono)', color: isDry ? 'var(--text-primary)' : 'var(--text-secondary)' }}
-                  >
-                    {isDry ? DRY_CODE : WET_CODE}
-                  </motion.pre>
-                </AnimatePresence>
-              </div>
-            </div>
+        {/* Unified Symmetrical Environment Terminal Specs footer */}
+        <div
+          className="w-full max-w-xl mx-auto rounded-lg border p-4 bg-black/10 font-mono text-[10px]"
+          style={{ borderColor: 'var(--border)' }}
+        >
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[var(--text-muted)]">
+            <span>OS: Windows 11</span>
+            <span className="w-[1px] h-3 bg-white/10 hidden sm:inline" />
+            <span>Shell: PowerShell / cmd</span>
+            <span className="w-[1px] h-3 bg-white/10 hidden sm:inline" />
+            <span>IDE: VS Code (Dark Theme)</span>
+            <span className="w-[1px] h-3 bg-white/10 hidden sm:inline" />
+            <span>Navigation: Keyboard / Mouse</span>
           </div>
         </div>
       </div>

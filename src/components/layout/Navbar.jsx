@@ -21,7 +21,7 @@ const NAV_LINKS = [
   { id: 'workspace', label: 'workspace' },
   { id: 'about', label: 'about' },
   { id: 'projects', label: 'projects' },
-  { id: 'contact', label: 'contact' }
+  { id: 'contact', label: 'contact' },
 ]
 
 // Observes all section IDs to accurately track scroll depth
@@ -35,7 +35,7 @@ const OBSERVED_IDS = [
   'projects',
   'achievements',
   'hackathons',
-  'contact'
+  'contact',
 ]
 
 // Maps scroll section IDs to main navigation items
@@ -49,7 +49,7 @@ const ACTIVE_MAP = {
   projects: 'projects',
   achievements: 'projects',
   hackathons: 'projects',
-  contact: 'contact'
+  contact: 'contact',
 }
 
 const Navbar = () => {
@@ -115,7 +115,7 @@ const Navbar = () => {
             const offsetPosition = el.offsetTop - 90
             window.scrollTo({
               top: offsetPosition,
-              behavior: 'smooth'
+              behavior: 'smooth',
             })
           }
         }, 100)
@@ -186,7 +186,8 @@ const Navbar = () => {
               const isHovered = hoveredTab === id
 
               const linkProps = {
-                className: "font-mono text-xs cursor-pointer px-4 py-2 rounded-full relative z-10 transition-colors duration-200",
+                className:
+                  'font-mono text-xs cursor-pointer px-4 py-2 rounded-full relative z-10 transition-colors duration-200',
                 style: {
                   color: isActive ? 'var(--accent)' : 'var(--text-muted)',
                   fontWeight: isActive ? '600' : '400',
@@ -227,14 +228,7 @@ const Navbar = () => {
               return (
                 <li key={id} className="relative h-full flex items-center">
                   {isHomePage ? (
-                    <Link
-                      to={id}
-                      smooth
-                      duration={600}
-                      offset={-90}
-                      aria-label={`Navigate to ${label}`}
-                      {...linkProps}
-                    >
+                    <Link to={id} smooth duration={600} offset={-90} aria-label={`Navigate to ${label}`} {...linkProps}>
                       {content}
                     </Link>
                   ) : (
@@ -322,25 +316,19 @@ const Navbar = () => {
                 {NAV_LINKS.map(({ id, label }) => {
                   const isActive = activeSection === id
                   const linkProps = {
-                    className: "font-mono text-sm cursor-pointer block px-4 py-2.5 rounded-xl transition-all duration-200",
+                    className:
+                      'font-mono text-sm cursor-pointer block px-4 py-2.5 rounded-xl transition-all duration-200',
                     style: {
                       color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
                       background: isActive ? 'var(--accent-muted)' : 'transparent',
                       fontWeight: isActive ? '600' : '400',
-                    }
+                    },
                   }
 
                   return (
                     <li key={id}>
                       {isHomePage ? (
-                        <Link
-                          to={id}
-                          smooth
-                          duration={600}
-                          offset={-90}
-                          onClick={closeMenu}
-                          {...linkProps}
-                        >
+                        <Link to={id} smooth duration={600} offset={-90} onClick={closeMenu} {...linkProps}>
                           {label}
                         </Link>
                       ) : (

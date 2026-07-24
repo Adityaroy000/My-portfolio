@@ -5,6 +5,7 @@ import eslintConfigPrettier from 'eslint-config-prettier'
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 
 export default [
+  { ignores: ['dist/'] },
   { files: ['**/*.{js,mjs,cjs,jsx}'] },
   { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
   js.configs.recommended,

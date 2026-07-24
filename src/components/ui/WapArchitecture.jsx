@@ -1,6 +1,6 @@
 /**
- * WushuArchitecture.jsx
- * Interactive SVG/CSS flowchart illustrating Wushu-MIS SaaS Architecture.
+ * WapArchitecture.jsx
+ * Interactive SVG/CSS flowchart illustrating the Wushu Assessment Platform (WAP) Architecture.
  * Clicking nodes displays detailed technical explanations.
  */
 
@@ -9,50 +9,50 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const NODES = [
   {
-    id: 'scoring',
-    title: '1. Live Scoring Cache',
-    tech: 'Zustand + Socket.io + RAM Cache',
+    id: 'intake',
+    title: '1. Candidate Intake Gateway',
+    tech: 'Phone Validation & Routing',
     description:
-      'During combat bouts, referee clicks write to an in-memory Map cache. Live points broadcast instantly to displays via Socket.io (<5ms), debouncing MongoDB batch-saves to run every 2 seconds, reducing database writes by 95% and preventing write locks.',
+      'A zero-barrier onboarding portal. Evaluates candidates by phone numbers, validates single registration bounds in MongoDB, and routes them to their specific discipline (Sanda or Taolu) without traditional password barriers.',
   },
   {
-    id: 'fixtures',
-    title: '2. Fixture Drawing Engine',
-    tech: 'Single-Elimination Draw Logic',
+    id: 'ingest',
+    title: '2. Ingestion Parser Engine',
+    tech: 'Mammoth.js + Regex Tokenizer',
     description:
-      'Automatically constructs power-of-2 tournament grids and positions Bye slots correctly. Implements teammate avoidance logic so representative athletes from the same state only compete in later rounds unless only teammates remain.',
+      'Parses raw Microsoft Word (.docx) and Adobe PDF exam files. The backend extracts structural XML using Mammoth.js, runs a custom state-machine tokenizer to isolate options (A-D) and answers, and batch-saves polymorphic question schemas to MongoDB.',
   },
   {
-    id: 'templates',
-    title: '3. Secure Excel Template Engine',
-    tech: 'ExcelJS + SHA-256 HMAC Signature',
+    id: 'network',
+    title: '3. Out-of-Order Write Guard',
+    tech: 'Sequence-Numbered Autosaves',
     description:
-      'Generates Excel rosters injecting native validation dropdowns derived from DB circulars. Protects templates from cross-event upload exploits by signing templates with a hidden SHA-256 HMAC containing the event ID and level, verified upon upload.',
+      'Protects candidate response submissions from latency spikes on congested networks. The client attaches an incremental sequence number to every selection. The database rejects any update that carries a sequence number lower than the stored value.',
   },
   {
-    id: 'rbac',
-    title: '4. Hierarchical RBAC Guard',
-    tech: 'Database-driven Permissions',
+    id: 'deadline',
+    title: '4. Server Deadline Guard',
+    tech: 'NTP Comparison + Grace Window',
     description:
-      'Enforces strict level isolation (National, State, District). Roles and access structures are stored dynamically in MongoDB, allowing permissions adjustments without redeploying backend code. Middleware filters records based on user jurisdiction.',
+      'Blocks browser countdown clock manipulation. The frontend timer is purely visual; the server locks a database deadline (start time + duration) on exam start and validates all incoming saves against its NTP server time, adding a 15s transit lag grace period.',
   },
   {
-    id: 'grievances',
-    title: '5. Grievance State-Machine',
-    tech: 'Multi-Tier Dispute Resolver',
+    id: 'device',
+    title: '5. Device Footprint Lock',
+    tech: 'SHA-256 IP & UA Footprint',
     description:
-      'Manages match protests and registration issues. Restricts status transitions (pending ➔ in_progress ➔ resolved) and auto-assigns handling coordinators upon reply to form a locked audit trail.',
+      'Prevents credential sharing and concurrent double-logins. The server hashes the User-Agent and IP address on the intake gate. All subsequent exam calls must match this footprint; otherwise, the session is flagged and locked.',
   },
   {
-    id: 'maintenance',
-    title: '6. Super Admin Maintenance Toolkit',
-    tech: 'Safeguarded DB Diagnostics',
+    id: 'pdf',
+    title: '6. Local PDF Compiler',
+    tech: 'Offline PDFKit Layouts',
     description:
-      'Allows selective database diagnostics and targeted purging of test configurations (fixtures, registrants) for a specific event. Includes a production lockout guard checking for ENABLE_DB_MAINTENANCE flags.',
+      'Compiles final exam results (auto-graded MCQs + administrator practical marks) into official landscape A4 reports. Generates documents locally via PDFKit, protecting sensitive participant data from external API exposures.',
   },
 ]
 
-const WushuArchitecture = () => {
+const WapArchitecture = () => {
   const [activeNode, setActiveNode] = useState(null)
 
   return (
@@ -61,7 +61,7 @@ const WushuArchitecture = () => {
       style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
     >
       <p className="font-mono text-xs tracking-widest mb-6 uppercase text-[var(--accent)]">
-        {'// Interactive Engine Architecture'}
+        {'// Interactive Platform Architecture'}
       </p>
 
       {/* Grid Nodes */}
@@ -117,4 +117,4 @@ const WushuArchitecture = () => {
   )
 }
 
-export default WushuArchitecture
+export default WapArchitecture

@@ -5,8 +5,8 @@
 export const aboutData = {
   quote: `"I believe in understanding deeply, building boldly, and shipping things that actually work."`,
 
-  body: `Final-year CS Engineering student at KIIT University — a campus so large I'm still discovering new buildings. I lead a team of 5 building a live SaaS platform that manages real Wushu championships, while simultaneously going deep on agentic AI systems that actually reason instead of just autocomplete. My foundation is built on reps: 700+ DSA problems, a 9.33 CGPA, and enough backend architecture decisions to know when to use a hammer and when to use a scalpel. I was selected for Amazon ML Summer School out of thousands of applicants across India. I don't collect skills — I build things with them.`,
+  body: `Final-year CS Engineering student at KIIT University. I lead a team of 5 building a live tournament orchestration SaaS (Wushu-MIS) and solo-engineered an offline-resilient digital licensing exam engine (WAP) — both adopted for national-level sports certification and events. Between managing high-frequency Socket.io scoring streams in RAM and writing regex XML tokenizers for MS Word document ingestion, I design systems that resolve chaos at scale. When I am not writing code for national sports bodies, I build self-correcting agentic RAG structures in LangGraph or solve competitive programming challenges (700+ solved).`,
 
   currentlyLabel: '// currently obsessing over',
-  currently: ['Agentic AI & LangGraph', 'Production system design', 'Competitive Programming'],
+  currently: ['Agentic AI & LangGraph', 'In-Memory Caching & WebSockets', 'Offline-Resilient Systems'],
 }
